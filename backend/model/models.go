@@ -1,10 +1,10 @@
-package main
+package model
 
 import "time"
 
 type Account struct {
 	ID        uint   `gorm:"primaryKey"`
-	UserID    string `gorm:"not null"`
+	UserID    string `gorm:"unique;not null"`
 	Name      string `gorm:"not null"`
 	Email     string `gorm:"default:null"`
 	Password  string `gorm:"not null"`
