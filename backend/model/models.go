@@ -8,6 +8,7 @@ type Account struct {
 	Name      string `gorm:"not null"`
 	Email     string `gorm:"default:null"`
 	Password  string `gorm:"not null"`
+	IsBot     string `gorm:"default:false"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -49,7 +50,7 @@ type Authority struct {
 	EditPays   bool `gorm:"not null;default:true"`
 	DeletePays bool `gorm:"not null;default:true"`
 	AddUser    bool `gorm:"not null;default:true"`
-	EditUser   bool `gorm:"not null;default:true"`
+	EditEvent  bool `gorm:"not null;default:true"`
 	DeleteUser bool `gorm:"not null;default:true"`
 }
 
