@@ -6,3 +6,7 @@ type InputAccount struct {
 	Email    string `json:"email"`
 	Password string `json:"password" binding:"required"`
 }
+type InputEvent struct {
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"reqiured"`
+}
