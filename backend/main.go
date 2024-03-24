@@ -10,12 +10,17 @@ func main() {
 	// Ginエンジンのインスタンスを作成
 	r := gin.Default()
 
-	r.GET("/api/accounts", api_v1.GetAccounts)
-	r.POST("/api/accounts", api_v1.AddAccount)
-	r.PATCH("/api/accounts/:ID", api_v1.UpdateAccount)
-	r.DELETE("/api/accounts/:ID", api_v1.DeleteAccount)
-	r.GET("/api/events", query.GetEvents)
-	r.GET("/api/friends", query.GetFriends)
+	api := r.Group("/api")
+	{
+		api.GET("/accounts", api_v1.GetAccounts)
+		api.POST("/accounts", api_v1.AddAccount)
+		api.PATCH("/accounts/:ID", api_v1.UpdateAccount)
+		api.DELETE("/accounts/:ID", api_v1.DeleteAccount)
+		api.GET("/event/:ID", api_v1.GetEventById)
+		api.GET("/events/:ID", api_v1.GetEventsByUserId)
+		api.GET("/friends", query.GetFriends)
+	}
+
 	// 8080ポートでサーバーを起動
 	r.Run(":8080")
 }

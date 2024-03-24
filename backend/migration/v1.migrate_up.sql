@@ -4,6 +4,7 @@ create table "accounts" (
   "name" varchar(255) not null,
   "email" varchar(255) default null,
   "password" varchar(255) not null,
+  "is_bot" boolean default false,
   "created_at" timestamp not null default current_timestamp,
   "updated_at" timestamp not null default current_timestamp
 );
@@ -40,7 +41,7 @@ create table "authorities"(
   "edit_pays" boolean not null default true,
   "delete_pays" boolean not null default true,
   "add_user" boolean not null default true,
-  "edit_user" boolean not null default true,
+  "edit_event" boolean not null default true,
   "delete_user" boolean not null default true
 );
 

@@ -4,8 +4,8 @@ import (
 	"github.com/dqx0/GoHalves/go/model"
 )
 
-func GetAccounts() ([]model.Account, error) {
-	var users []model.Account
+func GetAccounts() ([]*model.Account, error) {
+	var users []*model.Account
 
 	db := gormConnect()
 

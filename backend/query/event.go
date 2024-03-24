@@ -13,15 +13,44 @@ type InputEvent struct {
 	Description string `json:"description" binding:"required"`
 }
 
-func GetEvents(c *gin.Context) {
-	var events []model.Event
+/*
+	func GetEvents(c *gin.Context) {
+		var events []model.Event
 
+		db := gormConnect()
+
+		db.Find(&events)
+
+		c.JSON(http.StatusOK, gin.H{"events": events})
+	}
+*/
+func GetEventsByUserId(user_id int) ([]*model.Event, error) {
+	var accountEvents []*model.AccountEvent
 	db := gormConnect()
 
-	db.Find(&events)
+	if err := db.Preload("Event").Where(&model.AccountEvent{AccountID: uint(user_id)}).Find(&accountEvents).Error; err != nil {
+		return nil, err
+	}
 
-	c.JSON(http.StatusOK, gin.H{"events": events})
+	var events []*model.Event
+	for _, accountEvent := range accountEvents {
+		events = append(events, &accountEvent.Event)
+	}
+
+	return events, nil
 }
+
+func GetEventById(id int) (*model.Event, error) {
+	var event *model.Event
+	db := gormConnect()
+
+	if err := db.Where(&model.Event{ID: uint(id)}).Find(&event).Error; err != nil {
+		return nil, err
+	}
+
+	return event, nil
+}
+
 func AddEvent(c *gin.Context) {
 	var inputEvent InputEvent
 	if err := c.BindJSON(&inputEvent); err != nil {
