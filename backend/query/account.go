@@ -18,38 +18,27 @@ func GetAccounts() ([]*model.Account, error) {
 	return users, nil
 }
 
-func AddAccount(inputAccount *model.InputAccount) (*model.Account, error) {
-	var account model.Account
-	account.UserID = inputAccount.UserID
-	account.Name = inputAccount.Name
-	account.Email = inputAccount.Email
-	account.Password = inputAccount.Password
-
+func AddAccount(account *model.Account) (*model.Account, error) {
 	db := gormConnect()
 
 	if err := db.Create(&account).Error; err != nil {
 		return nil, err
 	}
 
-	return &account, nil
+	return account, nil
 }
-func UpdateAccount(id int, inputAccount *model.InputAccount) (*model.Account, error) {
-	var account model.Account
-	account.UserID = inputAccount.UserID
-	account.Name = inputAccount.Name
-	account.Email = inputAccount.Email
-	account.Password = inputAccount.Password
+func UpdateAccount(id int, account *model.Account) (*model.Account, error) {
 
 	db := gormConnect()
 
 	db.First(&account, id)
 
-	db.Model(&account).Update("UserID", inputAccount.UserID)
-	db.Model(&account).Update("Name", inputAccount.Name)
-	db.Model(&account).Update("Email", inputAccount.Email)
-	db.Model(&account).Update("Password", inputAccount.Password)
+	db.Model(&account).Update("UserID", account.UserID)
+	db.Model(&account).Update("Name", account.Name)
+	db.Model(&account).Update("Email", account.Email)
+	db.Model(&account).Update("Password", account.Password)
 
-	return &account, nil
+	return account, nil
 }
 func DeleteAccount(id int) (*model.Account, error) {
 	var account model.Account

@@ -7,6 +7,7 @@ type InputAccount struct {
 	Password string `json:"password" binding:"required"`
 }
 type InputEvent struct {
+	UserId      int    `json:"user_id" binding:"required"`
 	Title       string `json:"title" binding:"required"`
 	Description string `json:"description" binding:"reqiured"`
 }

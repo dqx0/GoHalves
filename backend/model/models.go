@@ -8,7 +8,7 @@ type Account struct {
 	Name      string `gorm:"not null"`
 	Email     string `gorm:"default:null"`
 	Password  string `gorm:"not null"`
-	IsBot     string `gorm:"default:false"`
+	IsBot     bool   `gorm:"default:false"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

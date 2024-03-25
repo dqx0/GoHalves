@@ -51,21 +51,30 @@ func GetEventById(id int) (*model.Event, error) {
 	return event, nil
 }
 
-func AddEvent(c *gin.Context) {
-	var inputEvent InputEvent
-	if err := c.BindJSON(&inputEvent); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+/*
+	func AddEvent(c *gin.Context) {
+		var inputEvent InputEvent
+		if err := c.BindJSON(&inputEvent); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-	var event model.Event
+		var event model.Event
+		db := gormConnect()
+		if err := db.Create(&event).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"event": event})
+	}
+*/
+func AddEvent(event *model.Event) (*model.Event, error) {
 	db := gormConnect()
 	if err := db.Create(&event).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-
-	c.JSON(http.StatusOK, gin.H{"event": event})
+	return event, nil
 }
 func UpdateEvent(c *gin.Context) {
 	Id := c.Param("ID")

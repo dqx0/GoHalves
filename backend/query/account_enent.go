@@ -23,21 +23,31 @@ func GetAccountEvents(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"account_events": accountEvents})
 }
-func AddAccountEvent(c *gin.Context) {
-	var inputAccountEvent InputAccountEvent
-	if err := c.BindJSON(&inputAccountEvent); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
-	var accountEvent model.AccountEvent
+/*
+	func AddAccountEvent(c *gin.Context) {
+		var inputAccountEvent InputAccountEvent
+		if err := c.BindJSON(&inputAccountEvent); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		var accountEvent model.AccountEvent
+		db := gormConnect()
+		if err := db.Create(&accountEvent).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"account_event": accountEvent})
+	}
+*/
+func AddAccountEvent(accountEvent *model.AccountEvent) (*model.AccountEvent, error) {
 	db := gormConnect()
 	if err := db.Create(&accountEvent).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, err
 	}
-
-	c.JSON(http.StatusOK, gin.H{"account_event": accountEvent})
+	return accountEvent, nil
 }
 func UpdateAccountEvent(c *gin.Context) {
 	Id := c.Param("ID")
