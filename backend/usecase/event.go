@@ -61,11 +61,6 @@ func (eu *eventUsecase) UpdateEvent(eventId int, event model.Event) (model.Event
 	return event, nil
 }
 func (eu *eventUsecase) DeleteEvent(eventId int, event model.Event) (model.Event, error) {
-	if err := eu.pr.DeletePays(eventId); err != nil {
-		return event, err
-	}
-	accountEvents := []model.AccountEvent{}
-	if err := eu.aer.GetAccountEventsByEventId(eventId, &accountEvents); err != nil {
-		return
-	}
+	// todo: トランザクション
+	return event, nil
 }
