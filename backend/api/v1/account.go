@@ -5,12 +5,23 @@ import (
 	"strconv"
 
 	"github.com/dqx0/GoHalves/go/model"
-	"github.com/dqx0/GoHalves/go/query"
+	"github.com/dqx0/GoHalves/go/repository"
 	"github.com/gin-gonic/gin"
 )
 
+type IAccountUsecase interface {
+	GetAccounts(accounts []*model.Account) error
+	AddAccount(account *model.Account) error
+	UpdateAccount(id int, account *model.Account) error
+	DeleteAccount(id int, account *model.Account) error
+}
+type accountUsecase struct {
+	accountRepository repository.IAccountRepository
+}
+
 func GetAccounts(c *gin.Context) {
-	accounts, err := query.GetAccounts()
+	var accounts []*model.Account
+	err := repository.GetAccounts(accounts)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -29,7 +40,7 @@ func AddAccount(c *gin.Context) {
 	account.Email = inputAccount.Email
 	account.Password = inputAccount.Password
 	account.IsBot = false
-	savedAccount, err := query.AddAccount(&account)
+	savedAccount, err := repository.AddAccount(&account)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -51,7 +62,7 @@ func UpdateAccount(c *gin.Context) {
 	account.Email = inputAccount.Email
 	account.Password = inputAccount.Password
 	account.IsBot = false
-	savedAccount, err := query.UpdateAccount(id, &account)
+	savedAccount, err := repository.UpdateAccount(id, &account)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -67,7 +78,7 @@ func DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := query.DeleteAccount(id)
+	account, err := repository.DeleteAccount(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

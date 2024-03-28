@@ -2,11 +2,14 @@ package main
 
 import (
 	api_v1 "github.com/dqx0/GoHalves/go/api/v1"
-	"github.com/dqx0/GoHalves/go/query"
+	"github.com/dqx0/GoHalves/go/db"
+	"github.com/dqx0/GoHalves/go/repository"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	db.NewDB()
+
 	// Ginエンジンのインスタンスを作成
 	r := gin.Default()
 
@@ -18,7 +21,7 @@ func main() {
 		api.DELETE("/accounts/:ID", api_v1.DeleteAccount)
 		api.GET("/event/:ID", api_v1.GetEventById)
 		api.GET("/events/:ID", api_v1.GetEventsByUserId)
-		api.GET("/friends", query.GetFriends)
+		api.GET("/friends", repository.GetFriends)
 	}
 
 	// 8080ポートでサーバーを起動

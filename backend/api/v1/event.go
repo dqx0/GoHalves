@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/dqx0/GoHalves/go/model"
-	"github.com/dqx0/GoHalves/go/query"
+	"github.com/dqx0/GoHalves/go/repository"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +17,7 @@ func GetEventsByUserId(c *gin.Context) {
 		return
 	}
 
-	events, err := query.GetEventsByUserId(userId)
+	events, err := repository.GetEventsByUserId(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -32,7 +32,7 @@ func GetEventById(c *gin.Context) {
 		return
 	}
 
-	event, err := query.GetEventById(eventId)
+	event, err := repository.GetEventById(eventId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -51,12 +51,12 @@ func AddEvent(c *gin.Context) {
 	event.Description = inputEvent.Description
 	accountEvent.AccountID = uint(inputEvent.UserId)
 	accountEvent.AuthorityID = 1
-	event, err := query.AddEvent(event)
+	event, err := repository.AddEvent(event)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	accountEvent, err = query.AddAccountEvent(accountEvent)
+	accountEvent, err = repository.AddAccountEvent(accountEvent)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
