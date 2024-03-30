@@ -10,22 +10,24 @@ type IAuthorityUsecase interface {
 	GetAuthorityById(authorityId int) (model.Authority, error)
 }
 type authorityUsecase struct {
-	ar repository.IAuthorityRepository
+	br repository.IBaseRepository
 }
 
-func NewAuthorityUsecase(ar repository.IAuthorityRepository) IAuthorityUsecase {
-	return &authorityUsecase{ar}
+func NewAuthorityUsecase(br repository.IBaseRepository) IAuthorityUsecase {
+	return &authorityUsecase{br}
 }
 func (au *authorityUsecase) GetAuthorities() ([]model.Authority, error) {
+	ar := au.br.GetAuthorityRepository()
 	authorities := []model.Authority{}
-	if err := au.ar.GetAuthorities(&authorities); err != nil {
+	if err := ar.GetAuthorities(&authorities); err != nil {
 		return nil, err
 	}
 	return authorities, nil
 }
 func (au *authorityUsecase) GetAuthorityById(authorityId int) (model.Authority, error) {
+	ar := au.br.GetAuthorityRepository()
 	authority := model.Authority{}
-	if err := au.ar.GetAuthorityById(authorityId, &authority); err != nil {
+	if err := ar.GetAuthorityById(authorityId, &authority); err != nil {
 		return model.Authority{}, err
 	}
 	return authority, nil
