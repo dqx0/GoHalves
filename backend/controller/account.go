@@ -48,6 +48,8 @@ func (ac *accountController) Login(c *gin.Context) error {
 		return err
 	}
 	account, err := au.Login(account)
+	// TODO: Implement login
+	// https://qiita.com/Yashy/items/84a8193b743edfa83b73
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return err
