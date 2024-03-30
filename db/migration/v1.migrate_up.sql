@@ -84,13 +84,13 @@ create index on "accounts_pays" ("account_id");
 
 create index on "accounts_pays" ("pay_id");
 
-alter table "accounts_events" add foreign key ("account_id") references "accounts" ("id");
-alter table "accounts_events" add foreign key ("event_id") references "events" ("id");
-alter table "accounts_events" add foreign key ("authority_id") references "authorities" ("id");
-alter table "pays" add foreign key ("paid_user_id") references "accounts" ("id");
-alter table "pays" add foreign key ("event_id") references "events" ("id");
-alter table "accounts_pays" add foreign key ("account_id") references "accounts" ("id");
-alter table "accounts_pays" add foreign key ("pay_id") references "pays" ("id");
-alter table "friends" add foreign key ("send_account_id") references "accounts" ("id");
-alter table "friends" add foreign key ("received_account_id") references "accounts" ("id");
+alter table "accounts_events" add foreign key ("account_id") references "accounts" ("id") on delete cascade;
+alter table "accounts_events" add foreign key ("event_id") references "events" ("id") on delete cascade;
+alter table "accounts_events" add foreign key ("authority_id") references "authorities" ("id") on delete cascade;
+alter table "pays" add foreign key ("paid_user_id") references "accounts" ("id") on delete cascade;
+alter table "pays" add foreign key ("event_id") references "events" ("id") on delete cascade;
+alter table "accounts_pays" add foreign key ("account_id") references "accounts" ("id") on delete cascade;
+alter table "accounts_pays" add foreign key ("pay_id") references "pays" ("id") on delete cascade;
+alter table "friends" add foreign key ("send_account_id") references "accounts" ("id") on delete cascade;
+alter table "friends" add foreign key ("received_account_id") references "accounts" ("id") on delete cascade;
 

@@ -14,31 +14,32 @@ type IEventUsecase interface {
 	DeleteEvent(eventId int, event model.Event) (model.Event, error)
 }
 type eventUsecase struct {
-	er  repository.IEventRepository
-	aer repository.IAccountEventRepository
-	pr  repository.IPayRepository
-	ev  validator.IEventValidator
+	br repository.IBaseRepository
+	bv validator.IBaseValidator
 }
 
-func NewEventUsecase(er repository.IEventRepository, ev validator.IEventValidator) IEventUsecase {
-	return &eventUsecase{er, ev}
+func NewEventUsecase(br repository.IBaseRepository, bv validator.IBaseValidator) IEventUsecase {
+	return &eventUsecase{br, bv}
 }
 func (eu *eventUsecase) GetEventById(eventId int) (model.Event, error) {
 	event := model.Event{}
-	if err := eu.er.GetEventById(eventId, &event); err != nil {
+	er := eu.br.GetEventRepository()
+	if err := er.GetEventById(eventId, &event); err != nil {
 		return model.Event{}, nil
 	}
 	return event, nil
 }
 func (eu *eventUsecase) GetEventsByAccountId(accountId int) ([]model.Event, error) {
 	events := []model.Event{}
-	if err := eu.er.GetEventsByAccountId(accountId, &events); err != nil {
+	er := eu.br.GetEventRepository()
+	if err := er.GetEventsByAccountId(accountId, &events); err != nil {
 		return nil, err
 	}
 	return events, nil
 }
 func (eu *eventUsecase) CreateEvent(event model.Event, createdAccountId int) (model.Event, error) {
-	if err := eu.er.CreateEvent(&event); err != nil {
+	er := eu.br.GetEventRepository()
+	if err := er.CreateEvent(&event); err != nil {
 		return model.Event{}, err
 	}
 	accountEvent := model.AccountEvent{
@@ -46,8 +47,9 @@ func (eu *eventUsecase) CreateEvent(event model.Event, createdAccountId int) (mo
 		EventID:     event.ID,
 		AuthorityID: 0,
 	}
-	if err := eu.aer.CreateAccountEvent(&accountEvent); err != nil {
-		if err := eu.er.DeleteEvent(int(event.ID), &event); err != nil {
+	aer := eu.br.GetAccountEventRepository()
+	if err := aer.CreateAccountEvent(&accountEvent); err != nil {
+		if err := er.DeleteEvent(int(event.ID), &event); err != nil {
 			return model.Event{}, err
 		}
 		return model.Event{}, err
@@ -55,12 +57,26 @@ func (eu *eventUsecase) CreateEvent(event model.Event, createdAccountId int) (mo
 	return event, nil
 }
 func (eu *eventUsecase) UpdateEvent(eventId int, event model.Event) (model.Event, error) {
-	if err := eu.er.UpdateEvent(eventId, &event); err != nil {
+	er := eu.br.GetEventRepository()
+	if err := er.UpdateEvent(eventId, &event); err != nil {
 		return event, err
 	}
 	return event, nil
 }
 func (eu *eventUsecase) DeleteEvent(eventId int, event model.Event) (model.Event, error) {
 	// todo: トランザクション
-	return event, nil
+	// 複数のリポジトリを扱う場合はトランザクションを使う
+	// トランザクションを使う場合は、トランザクション内でリポジトリを生成する
+	// トランザクションはリポジトリのメソッド内で行い、ユースケース層でトランザクションを意識する必要はない
+	// 参考: https://gorm.io/ja_JP/docs/transactions.html, https://sano11o1.com/posts/handle-transaction-in-usecase-layer
+	// 例　↓
+	atomicBlock := func(br repository.IBaseRepository) error {
+		er := br.GetEventRepository()
+		if err := er.DeleteEvent(eventId, &event); err != nil {
+			return err
+		}
+		return nil
+	}
+	err := eu.br.Atomic(atomicBlock)
+	return event, err
 }
