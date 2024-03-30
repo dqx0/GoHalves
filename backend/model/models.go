@@ -11,6 +11,8 @@ type Account struct {
 	IsBot     bool   `gorm:"default:false"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Events    []Event `gorm:"many2many:account_events"`
+	Pays      []Pay   `gorm:"many2many:account_pays"`
 }
 
 type Event struct {
@@ -19,6 +21,8 @@ type Event struct {
 	Description string `gorm:"not null"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	Pays        []Pay     `gorm:"foreignKey:EventID"`
+	Accounts    []Account `gorm:"many2many:account_events"`
 }
 
 type Pay struct {
@@ -28,8 +32,9 @@ type Pay struct {
 	Amount     uint `gorm:"not null"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-	PaidUser   Account `gorm:"foreignKey:PaidUserID"`
-	Event      Event   `gorm:"foreignKey:EventID"`
+	PaidUser   Account   `gorm:"foreignKey:PaidUserID"`
+	Event      Event     `gorm:"foreignKey:EventID"`
+	Accounts   []Account `gorm:"many2many:account_pays"`
 }
 
 type AccountEvent struct {

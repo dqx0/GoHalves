@@ -1,5 +1,6 @@
 package api_v1
 
+/*
 import (
 	"net/http"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 	"github.com/dqx0/GoHalves/go/repository"
 	"github.com/gin-gonic/gin"
 )
-
 type IAccountUsecase interface {
 	GetAccounts(accounts []*model.Account) error
 	AddAccount(account *model.Account) error
@@ -86,3 +86,4 @@ func DeleteAccount(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"account": account})
 }
+*/

@@ -1,5 +1,6 @@
 package api_v1
 
+/*
 import (
 	"net/http"
 	"strconv"
@@ -64,3 +65,4 @@ func AddEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"event": event})
 }
+*/

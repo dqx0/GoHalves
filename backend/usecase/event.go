@@ -10,8 +10,11 @@ type IEventUsecase interface {
 	GetEventById(eventId int) (model.Event, error)
 	GetEventsByAccountId(accountId int) ([]model.Event, error)
 	CreateEvent(event model.Event, createdAccountId int) (model.Event, error)
+	AddAccountToEvent(eventId int, accountId int, authorityId int) (model.AccountEvent, error)
 	UpdateEvent(eventId int, event model.Event) (model.Event, error)
+	UpdateAuthority(accountEventId int, authorityId int) (model.AccountEvent, error)
 	DeleteEvent(eventId int, event model.Event) (model.Event, error)
+	DeleteAccountFromEvent(eventId int, accountId int) (model.AccountEvent, error)
 }
 type eventUsecase struct {
 	br repository.IBaseRepository
@@ -38,26 +41,48 @@ func (eu *eventUsecase) GetEventsByAccountId(accountId int) ([]model.Event, erro
 	return events, nil
 }
 func (eu *eventUsecase) CreateEvent(event model.Event, createdAccountId int) (model.Event, error) {
-	er := eu.br.GetEventRepository()
-	if err := er.CreateEvent(&event); err != nil {
+	ev := eu.bv.GetEventValidator()
+
+	// バリデーション
+	if err := ev.EventValidate(&event); err != nil {
 		return model.Event{}, err
 	}
-	accountEvent := model.AccountEvent{
-		AccountID:   uint(createdAccountId),
-		EventID:     event.ID,
-		AuthorityID: 0,
-	}
-	aer := eu.br.GetAccountEventRepository()
-	if err := aer.CreateAccountEvent(&accountEvent); err != nil {
-		if err := er.DeleteEvent(int(event.ID), &event); err != nil {
-			return model.Event{}, err
+	atomicBlock := func(br repository.IBaseRepository) error {
+		er := br.GetEventRepository()
+		// イベント作成
+		if err := er.CreateEvent(&event); err != nil {
+			return err
 		}
-		return model.Event{}, err
+		accountEvent := model.AccountEvent{
+			AccountID:   uint(createdAccountId),
+			EventID:     event.ID,
+			AuthorityID: 0,
+		}
+
+		// アカウントイベント作成
+		aer := eu.br.GetAccountEventRepository()
+		if err := aer.CreateAccountEvent(&accountEvent); err != nil {
+			if err := er.DeleteEvent(int(event.ID), &event); err != nil {
+				return err
+			}
+			return err
+		}
+		return nil
 	}
-	return event, nil
+
+	err := eu.br.Atomic(atomicBlock)
+	return event, err
 }
 func (eu *eventUsecase) UpdateEvent(eventId int, event model.Event) (model.Event, error) {
+	ev := eu.bv.GetEventValidator()
 	er := eu.br.GetEventRepository()
+
+	// バリデーション
+	if err := ev.EventValidate(&event); err != nil {
+		return event, err
+	}
+
+	// イベント更新
 	if err := er.UpdateEvent(eventId, &event); err != nil {
 		return event, err
 	}

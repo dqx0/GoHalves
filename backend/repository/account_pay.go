@@ -8,6 +8,8 @@ import (
 type IAccountPayRepository interface {
 	GetAccountPaysByAccountId(accountId int, accountPays *[]model.AccountPay) error
 	GetAccountPaysByPayId(payId int, accountPays *[]model.AccountPay) error
+	GetAccountPayByPayIdAndAccountId(payId int, accountId int, accountPay *model.AccountPay) error
+	GetPaysByAccountIdAndEventId(accountId int, eventId int, pays *[]model.Pay) error
 	CreateAccountPay(accountPay *model.AccountPay) error
 	UpdateAccountPay(id int, accountPay *model.AccountPay) error
 	DeleteAccountPay(id int, accountPay *model.AccountPay) error
@@ -27,6 +29,18 @@ func (apr *accountPayRepository) GetAccountPaysByAccountId(accountId int, accoun
 }
 func (apr *accountPayRepository) GetAccountPaysByPayId(payId int, accountPays *[]model.AccountPay) error {
 	if err := apr.db.Where("pay_id = ?", payId).Find(&accountPays).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func (apr *accountPayRepository) GetAccountPayByPayIdAndAccountId(payId int, accountId int, accountPay *model.AccountPay) error {
+	if err := apr.db.Where("pay_id = ? AND account_id = ?", payId, accountId).Find(&accountPay).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func (apr *accountPayRepository) GetPaysByAccountIdAndEventId(accountId int, eventId int, pays *[]model.Pay) error {
+	if err := apr.db.Table("account_pays").Where("account_id = ? AND event_id = ?", accountId, eventId).Joins("JOIN pays ON account_pays.pay_id = pays.id").Find(&pays).Error; err != nil {
 		return err
 	}
 	return nil
