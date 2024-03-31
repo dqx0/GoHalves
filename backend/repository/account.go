@@ -8,6 +8,7 @@ import (
 type IAccountRepository interface {
 	GetAccounts(accounts *[]model.Account) error
 	GetAccountById(id int, account *model.Account) error
+	GetAccountByAccountId(id string, account *model.Account) error
 	CreateAccount(account *model.Account) error
 	UpdateAccount(id int, account *model.Account) error
 	DeleteAccount(id int, account *model.Account) error
@@ -31,7 +32,15 @@ func (ar *accountRepository) GetAccounts(accounts *[]model.Account) error {
 	return nil
 }
 func (ar *accountRepository) GetAccountById(id int, account *model.Account) error {
-	if err := ar.db.Where(&model.Event{ID: uint(id)}).Find(&account).Error; err != nil {
+	if err := ar.db.Where(&model.Account{ID: uint(id)}).Find(&account).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ar *accountRepository) GetAccountByAccountId(id string, account *model.Account) error {
+	if err := ar.db.Where(&model.Account{UserID: id}).Find(&account).Error; err != nil {
 		return err
 	}
 

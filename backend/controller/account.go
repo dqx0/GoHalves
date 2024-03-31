@@ -11,17 +11,17 @@ import (
 
 type IAccountController interface {
 	GetAccountInfo(c *gin.Context) error
-	Login(c *gin.Context) error
 	CreateAccount(c *gin.Context) error
 	UpdateAccount(c *gin.Context) error
 	DeleteAccount(c *gin.Context) error
 }
 type accountController struct {
 	bu usecase.IBaseUsecase
+	su usecase.ISessionUsecase
 }
 
-func NewAccountController(bu usecase.IBaseUsecase) IAccountController {
-	return &accountController{bu}
+func NewAccountController(bu usecase.IBaseUsecase, su usecase.ISessionUsecase) IAccountController {
+	return &accountController{bu, su}
 }
 func (ac *accountController) GetAccountInfo(c *gin.Context) error {
 	var account model.Account
@@ -40,20 +40,51 @@ func (ac *accountController) GetAccountInfo(c *gin.Context) error {
 	c.JSON(http.StatusOK, gin.H{"account": account})
 	return nil
 }
-func (ac *accountController) Login(c *gin.Context) error {
+func (ac *accountController) CreateAccount(c *gin.Context) error {
 	var account model.Account
 	au := ac.bu.GetAccountUsecase()
-	if err := c.BindJSON(&account); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	err := c.BindJSON(&account)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return err
 	}
-	account, err := au.Login(account)
-	// TODO: Implement login
-	// https://qiita.com/Yashy/items/84a8193b743edfa83b73
+	createdAccount, err := au.CreateAccount(account)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return err
 	}
-	c.JSON(http.StatusOK, gin.H{"account": account})
+	c.JSON(http.StatusOK, gin.H{"account": createdAccount})
+	return nil
+}
+func (ac *accountController) UpdateAccount(c *gin.Context) error {
+	var account model.Account
+	au := ac.bu.GetAccountUsecase()
+	err := c.BindJSON(&account)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return err
+	}
+	updatedAccount, err := au.UpdateAccount(int(account.ID), account)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return err
+	}
+	c.JSON(http.StatusOK, gin.H{"account": updatedAccount})
+	return nil
+}
+func (ac *accountController) DeleteAccount(c *gin.Context) error {
+	var account model.Account
+	au := ac.bu.GetAccountUsecase()
+	err := c.BindJSON(&account)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return err
+	}
+	deletedAccount, err := au.DeleteAccount(int(account.ID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return err
+	}
+	c.JSON(http.StatusOK, gin.H{"account": deletedAccount})
 	return nil
 }

@@ -2,6 +2,7 @@ version: '3.8'
 services:
   postgres:
     container_name: postgres
+    restart: always
     build:
       context: .
       dockerfile: ./docker/db/Dockerfile
@@ -13,11 +14,23 @@ services:
       - db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/redis/Dockerfile
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
 
   golang:
     container_name: golang
     depends_on:
       - postgres
+      - redis
     build:
       context: .
       dockerfile: ./docker/backend/Dockerfile
@@ -43,4 +56,6 @@ services:
 
 volumes:
   db-data:
+    driver: local
+  redis-data:
     driver: local
