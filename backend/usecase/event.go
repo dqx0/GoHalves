@@ -13,7 +13,7 @@ type IEventUsecase interface {
 	AddAccountToEvent(eventId int, accountId int, authorityId int) (model.AccountEvent, error)
 	UpdateEvent(eventId int, event model.Event) (model.Event, error)
 	UpdateAuthority(accountEventId int, authorityId int) (model.AccountEvent, error)
-	DeleteEvent(eventId int, event model.Event) (model.Event, error)
+	DeleteEvent(eventId int) (int, error)
 	DeleteAccountFromEvent(eventId int, accountId int) (model.AccountEvent, error)
 }
 type eventUsecase struct {
@@ -88,7 +88,7 @@ func (eu *eventUsecase) UpdateEvent(eventId int, event model.Event) (model.Event
 	}
 	return event, nil
 }
-func (eu *eventUsecase) DeleteEvent(eventId int, event model.Event) (model.Event, error) {
+func (eu *eventUsecase) DeleteEvent(eventId int) (int, error) {
 	// todo: トランザクション
 	// 複数のリポジトリを扱う場合はトランザクションを使う
 	// トランザクションを使う場合は、トランザクション内でリポジトリを生成する
@@ -97,11 +97,15 @@ func (eu *eventUsecase) DeleteEvent(eventId int, event model.Event) (model.Event
 	// 例　↓
 	atomicBlock := func(br repository.IBaseRepository) error {
 		er := br.GetEventRepository()
+		event := model.Event{}
+		if err := er.GetEventById(eventId, &event); err != nil {
+			return err
+		}
 		if err := er.DeleteEvent(eventId, &event); err != nil {
 			return err
 		}
 		return nil
 	}
 	err := eu.br.Atomic(atomicBlock)
-	return event, err
+	return eventId, err
 }

@@ -8,9 +8,10 @@ import (
 )
 
 type IFriendUsecase interface {
+	GetFriendById(id int) (model.Friend, error)
 	GetFriendsByAccountId(accountId int, friends []model.Friend) ([]model.Friend, error)
 	SendFriendRequest(sendAccountId int, receivedAccountId int) (model.Friend, error)
-	AcceptFriend(id int, friend model.Friend) (model.Friend, error)
+	AcceptFriend(id int) (model.Friend, error)
 	DeleteFriend(id int) (model.Friend, error)
 }
 type friendUsecase struct {
@@ -19,6 +20,14 @@ type friendUsecase struct {
 
 func NewFriendUsecase(br repository.IBaseRepository) IFriendUsecase {
 	return &friendUsecase{br}
+}
+func (fu *friendUsecase) GetFriendById(id int) (model.Friend, error) {
+	fr := fu.br.GetFriendRepository()
+	friend := model.Friend{}
+	if err := fr.GetFriendById(id, &friend); err != nil {
+		return model.Friend{}, err
+	}
+	return friend, nil
 }
 func (fu *friendUsecase) GetFriendsByAccountId(accountId int, friends []model.Friend) ([]model.Friend, error) {
 	fr := fu.br.GetFriendRepository()
@@ -42,8 +51,13 @@ func (fu *friendUsecase) SendFriendRequest(sendAccountId int, receivedAccountId 
 	}
 	return friend, nil
 }
-func (fu *friendUsecase) AcceptFriend(id int, friend model.Friend) (model.Friend, error) {
+func (fu *friendUsecase) AcceptFriend(id int) (model.Friend, error) {
 	fr := fu.br.GetFriendRepository()
+	friend := model.Friend{}
+	err := fr.GetFriendById(id, &friend)
+	if err != nil {
+		return model.Friend{}, err
+	}
 	friend.AcceptedAt = time.Now()
 	if err := fr.UpdateFriend(id, &friend); err != nil {
 		return model.Friend{}, err

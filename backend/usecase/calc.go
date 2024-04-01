@@ -9,7 +9,7 @@ import (
 )
 
 type ICalcUsecase interface {
-	CalculatePaymentForAccounts(event model.Event) ([]model.Calc, error)
+	CalculatePaymentForAccounts(eventId int) ([]model.Calc, error)
 }
 type calcUsecase struct {
 	br repository.IBaseRepository
@@ -18,7 +18,12 @@ type calcUsecase struct {
 func NewCalcUsecase(br repository.IBaseRepository) ICalcUsecase {
 	return &calcUsecase{br}
 }
-func (cu *calcUsecase) CalculatePaymentForAccounts(event model.Event) ([]model.Calc, error) {
+func (cu *calcUsecase) CalculatePaymentForAccounts(eventId int) ([]model.Calc, error) {
+	event := model.Event{}
+	er := cu.br.GetEventRepository()
+	if err := er.GetEventById(eventId, &event); err != nil {
+		return nil, err
+	}
 	calcs := []model.Calc{}
 	atomicBlock := func(br repository.IBaseRepository) error {
 		pr := br.GetPayRepository()
