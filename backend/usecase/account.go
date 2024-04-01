@@ -11,7 +11,7 @@ type IAccountUsecase interface {
 	GetAccountById(accountId int) (model.Account, error)
 	CreateAccount(account model.Account) (model.Account, error)
 	UpdateAccount(accountId int, account model.Account) (model.Account, error)
-	DeleteAccount(accountId int, account model.Account) (model.Account, error)
+	DeleteAccount(accountId int) (model.Account, error)
 }
 type accountUsecase struct {
 	br repository.IBaseRepository
@@ -59,8 +59,12 @@ func (au *accountUsecase) UpdateAccount(accountId int, account model.Account) (m
 	}
 	return account, nil
 }
-func (au *accountUsecase) DeleteAccount(accountId int, account model.Account) (model.Account, error) {
+func (au *accountUsecase) DeleteAccount(accountId int) (model.Account, error) {
 	ar := au.br.GetAccountRepository()
+	account, err := au.GetAccountById(accountId)
+	if err != nil {
+		return model.Account{}, err
+	}
 	if err := ar.DeleteAccount(accountId, &account); err != nil {
 		return model.Account{}, err
 	}

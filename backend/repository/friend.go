@@ -6,6 +6,7 @@ import (
 )
 
 type IFriendRepository interface {
+	GetFriendById(id int, friend *model.Friend) error
 	GetFriendsBySendAccountId(sendAccountId int, friends *[]model.Friend) error
 	GetFriendsByReceivedAccountId(sendAccountId int, friends *[]model.Friend) error
 	GetFriendsByAccountId(sendAccountId int, friends *[]model.Friend) error
@@ -19,6 +20,12 @@ type friendRepository struct {
 
 func NewFriendRepository(db *gorm.DB) IFriendRepository {
 	return &friendRepository{db}
+}
+func (frr *friendRepository) GetFriendById(id int, friend *model.Friend) error {
+	if err := frr.db.Where("id = ?", id).Find(&friend).Error; err != nil {
+		return err
+	}
+	return nil
 }
 func (frr *friendRepository) GetFriendsBySendAccountId(sendAccountId int, friends *[]model.Friend) error {
 	if err := frr.db.Where("send_account_id = ?", sendAccountId).Find(&friends).Error; err != nil {

@@ -1,2 +1,4 @@
 *.pptx
 .env
+.conf
+.DS_Store

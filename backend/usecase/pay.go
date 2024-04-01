@@ -13,7 +13,7 @@ type IPayUsecase interface {
 	CreatePay(pay model.Pay, createdAccountId int, accountIdsToPay []int) (model.Pay, error)
 	AddAccountToPay(payId int, accountId int) (model.AccountPay, error)
 	UpdatePay(id int, pay model.Pay) (model.Pay, error)
-	DeletePay(id int, pay model.Pay) (model.Pay, error)
+	DeletePay(id int) (model.Pay, error)
 	DeleteAccountFromPay(payId int, accountId int) (model.AccountPay, error)
 }
 type payUsecase struct {
@@ -92,8 +92,13 @@ func (pu *payUsecase) UpdatePay(id int, pay model.Pay) (model.Pay, error) {
 	}
 	return pay, nil
 }
-func (pu *payUsecase) DeletePay(id int, pay model.Pay) (model.Pay, error) {
+func (pu *payUsecase) DeletePay(id int) (model.Pay, error) {
 	pr := pu.br.GetPayRepository()
+	pay := model.Pay{}
+	err := pr.GetPayById(id, &pay)
+	if err != nil {
+		return model.Pay{}, err
+	}
 	if err := pr.DeletePay(id, &pay); err != nil {
 		return model.Pay{}, err
 	}
