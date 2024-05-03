@@ -10,6 +10,7 @@ type IBaseHandler interface {
 	GetPayHandler() IPayHandler
 	GetFriendHandler() IFriendHandler
 	GetSessionHandler() ISessionHandler
+	GetTestHandler() ITestHandler
 }
 type baseHandler struct {
 	bu usecase.IBaseUsecase
@@ -32,4 +33,7 @@ func (bc *baseHandler) GetFriendHandler() IFriendHandler {
 }
 func (bc *baseHandler) GetSessionHandler() ISessionHandler {
 	return NewSessionHandler(bc.bu)
+}
+func (bc *baseHandler) GetTestHandler() ITestHandler {
+	return NewTestHandler()
 }

@@ -5,12 +5,9 @@ import (
 	"github.com/dqx0/GoHalves/go/usecase"
 	"github.com/gin-gonic/gin"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -30,15 +27,8 @@ func (sc *sessionHandler) Login() gin.HandlerFunc {
 		username := c.PostForm("user_id")
 		password := c.PostForm("password")
 
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-			return
-		}
-		password = string(hashedPassword)
-
 		su := sc.bu.GetSessionUsecase()
-		ok, err := su.Login(c, username, password)
+		ok, err := su.Login(username, password)
 		if !ok || err != nil {
 			c.Redirect(http.StatusFound, "/account")
 			return
@@ -61,17 +51,19 @@ func (sc *sessionHandler) Login() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"token": tokenString})
+		c.SetSameSite(http.SameSiteNoneMode)
+		c.SetCookie("jwtToken", tokenString, 3600, "/", "localhost", true, true)
+		//c.Header("Set-Cookie", "jwtToken="+tokenString+"; Path=/; Domain=localhost; Max-Age=3600; SameSite=None")
+		c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 	}
 }
+
 func (sc *sessionHandler) CheckSession(c *gin.Context) {
-	authorizationHeader := c.GetHeader("Authorization")
-	if authorizationHeader == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+	tokenString, err := c.Cookie("jwtToken")
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization cookie is required"})
 		return
 	}
-
-	tokenString := strings.TrimPrefix(authorizationHeader, "Bearer ")
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -91,7 +83,7 @@ func (sc *sessionHandler) CheckSession(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not regenerate token"})
 			return
 		}
-		c.Header("Authorization", "Bearer "+newToken)
+		c.SetCookie("jwtToken", newToken, 3600, "/", "localhost", false, true)
 		c.Set("userId", claims["userId"])
 	}
 }
