@@ -12,6 +12,7 @@ type IBaseUsecase interface {
 	GetCalcUsecase() ICalcUsecase
 	GetAuthorityUsecase() IAuthorityUsecase
 	GetFriendUsecase() IFriendUsecase
+	GetSessionUsecase() ISessionUsecase
 }
 type baseUsecase struct {
 	br repository.IBaseRepository
@@ -38,4 +39,7 @@ func (bu *baseUsecase) GetAuthorityUsecase() IAuthorityUsecase {
 }
 func (bu *baseUsecase) GetFriendUsecase() IFriendUsecase {
 	return NewFriendUsecase(bu.br)
+}
+func (bu *baseUsecase) GetSessionUsecase() ISessionUsecase {
+	return NewSessionUsecase(bu.br)
 }

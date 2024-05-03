@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/dqx0/GoHalves/go/model"
 	"github.com/dqx0/GoHalves/go/usecase"
 	"github.com/gin-gonic/gin"
@@ -37,6 +39,7 @@ func (ac *accountHandler) GetAccountById() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		account.Password = ""
 		c.JSON(http.StatusOK, gin.H{"account": account})
 	}
 }
@@ -44,16 +47,31 @@ func (ac *accountHandler) CreateAccount() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var account model.Account
 		au := ac.bu.GetAccountUsecase()
+
+		// JSONからアカウント情報をバインド
 		err := c.BindJSON(&account)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 			return
 		}
+
+		// パスワードをハッシュ化
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+			return
+		}
+		account.Password = string(hashedPassword)
+
+		// アカウントを作成
 		createdAccount, err := au.CreateAccount(account)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
+		// パスワード情報を除外してレスポンスを返す
+		createdAccount.Password = ""
 		c.JSON(http.StatusOK, gin.H{"account": createdAccount})
 	}
 }
@@ -71,6 +89,7 @@ func (ac *accountHandler) UpdateAccount() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		updatedAccount.Password = ""
 		c.JSON(http.StatusOK, gin.H{"account": updatedAccount})
 	}
 }
@@ -88,6 +107,6 @@ func (ac *accountHandler) DeleteAccount() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"account": deletedAccount})
+		c.JSON(http.StatusOK, gin.H{"message": deletedAccount.Name + "was deleted"})
 	}
 }
