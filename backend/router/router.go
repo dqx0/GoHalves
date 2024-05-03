@@ -9,12 +9,12 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 	r := gin.Default()
 
 	r.POST("/login", bh.GetSessionHandler().Login())
+	r.POST("/account", bh.GetAccountHandler().CreateAccount())
 	authorized := r.Group("/")
 	authorized.Use(bh.GetSessionHandler().CheckSession)
 	{
 		// Account
 		authorized.GET("/account/:id", bh.GetAccountHandler().GetAccountById())
-		authorized.POST("/account", bh.GetAccountHandler().CreateAccount())
 		authorized.PUT("/account/:id", bh.GetAccountHandler().UpdateAccount())
 		authorized.DELETE("/account/:id", bh.GetAccountHandler().DeleteAccount())
 		// Event
