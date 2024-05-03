@@ -7,12 +7,26 @@ import (
 
 func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // リクエストを許可するオリジン
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")             // クレデンシャルを許可する（Cookieなど）
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+
+		c.Next()
+	})
 	r.POST("/login", bh.GetSessionHandler().Login())
 	r.POST("/account", bh.GetAccountHandler().CreateAccount())
 	authorized := r.Group("/")
 	authorized.Use(bh.GetSessionHandler().CheckSession)
 	{
+		//test
+		authorized.GET("/", bh.GetTestHandler().Test())
 		// Account
 		authorized.GET("/account/:id", bh.GetAccountHandler().GetAccountById())
 		authorized.PUT("/account/:id", bh.GetAccountHandler().UpdateAccount())
