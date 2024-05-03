@@ -9,6 +9,7 @@ type IBaseHandler interface {
 	GetEventHandler() IEventHandler
 	GetPayHandler() IPayHandler
 	GetFriendHandler() IFriendHandler
+	GetSessionHandler() ISessionHandler
 }
 type baseHandler struct {
 	bu usecase.IBaseUsecase
@@ -28,4 +29,7 @@ func (bc *baseHandler) GetPayHandler() IPayHandler {
 }
 func (bc *baseHandler) GetFriendHandler() IFriendHandler {
 	return NewFriendHandler(bc.bu)
+}
+func (bc *baseHandler) GetSessionHandler() ISessionHandler {
+	return NewSessionHandler(bc.bu)
 }

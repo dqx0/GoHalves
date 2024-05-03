@@ -9,6 +9,7 @@ type IAccountRepository interface {
 	GetAccounts(accounts *[]model.Account) error
 	GetAccountById(id int, account *model.Account) error
 	GetAccountByAccountId(id string, account *model.Account) error
+	CheckAccountInfo(userId string, password string) (bool, error)
 	CreateAccount(account *model.Account) error
 	UpdateAccount(id int, account *model.Account) error
 	DeleteAccount(id int, account *model.Account) error
@@ -22,6 +23,20 @@ func NewAccountRepository(db *gorm.DB) IAccountRepository {
 	return &accountRepository{db}
 }
 
+func (ar *accountRepository) CheckAccountInfo(userId string, password string) (bool, error) {
+	var account model.Account
+	if err := ar.db.Where("user_id = ?", userId).First(&account).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil // ユーザーが見つからない場合はfalseを返す
+		}
+		return false, err // データベースエラーが発生した場合
+	}
+	if account.Password == password {
+		return true, nil // パスワードが一致する場合はtrueを返す
+	}
+
+	return false, nil // パスワードが一致しない場合はfalseを返す
+}
 func (ar *accountRepository) GetAccounts(accounts *[]model.Account) error {
 	// db.Findの結果をチェックして、エラーがあれば返す
 	if err := ar.db.Find(accounts).Error; err != nil {

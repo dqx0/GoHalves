@@ -1,54 +1,43 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/dqx0/GoHalves/go/handler"
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(bc handler.IBaseHandler, sc handler.ISessionHandler) *gin.Engine {
+func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 	r := gin.Default()
-	r.Use(CheckLoggedIn(sc))
-	// Account
-	r.GET("/account/:id", bc.GetAccountHandler().GetAccountById())
-	r.POST("/account", bc.GetAccountHandler().CreateAccount())
-	r.PUT("/account/:id", bc.GetAccountHandler().UpdateAccount())
-	r.DELETE("/account/:id", bc.GetAccountHandler().DeleteAccount())
-	// Event
-	r.GET("/event/:id", bc.GetEventHandler().GetEventById())
-	r.GET("/event/account/:id", bc.GetEventHandler().GetEventByAccountId())
-	r.POST("/event", bc.GetEventHandler().CreateEvent())
-	r.PUT("/event", bc.GetEventHandler().UpdateEvent())
-	r.PUT("/event/authority", bc.GetEventHandler().UpdateAuthority())
-	r.DELETE("/event/:id", bc.GetEventHandler().DeleteEvent())
-	// Pay
-	r.GET("/pay/event/:eventId", bc.GetPayHandler().GetPaysByEventId())
-	r.GET("/pay/:id", bc.GetPayHandler().GetPayById())
-	r.GET("/pay/account/:accountId/event/:eventId", bc.GetPayHandler().GetPaysByAccountIdAndEventId())
-	r.POST("/pay", bc.GetPayHandler().CreatePay())
-	r.PUT("/pay/:id", bc.GetPayHandler().UpdatePay())
-	r.DELETE("/pay/:id", bc.GetPayHandler().DeletePay())
-	r.POST("/pay/account/:id", bc.GetPayHandler().AddAccountToPay())
-	r.DELETE("/pay/account/:id", bc.GetPayHandler().DeleteAccountFromPay())
-	// Friend
-	r.GET("/friend/:id", bc.GetFriendHandler().GetFriendsByAccountId())
-	r.POST("/friend", bc.GetFriendHandler().SendFriendRequest())
-	r.PUT("/friend/:id", bc.GetFriendHandler().AcceptFriend())
-	r.DELETE("/friend/:id", bc.GetFriendHandler().DeleteFriend())
-	return r
-}
-func CheckLoggedIn(sc handler.ISessionHandler) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// セッションIDが存在する場合、そのセッションが有効かどうかを確認
-		// ここでは、データベースまたはメモリ内のセッションストアを確認することを想定しています
-		if sc.CheckSession(c) {
-			// セッションが無効な場合、ログインページにリダイレクト
-			c.Redirect(http.StatusTemporaryRedirect, "/login")
-			c.Abort()
-			return
-		}
 
-		c.Next()
+	r.POST("/login", bh.GetSessionHandler().Login())
+	authorized := r.Group("/")
+	authorized.Use(bh.GetSessionHandler().CheckSession)
+	{
+		// Account
+		authorized.GET("/account/:id", bh.GetAccountHandler().GetAccountById())
+		authorized.POST("/account", bh.GetAccountHandler().CreateAccount())
+		authorized.PUT("/account/:id", bh.GetAccountHandler().UpdateAccount())
+		authorized.DELETE("/account/:id", bh.GetAccountHandler().DeleteAccount())
+		// Event
+		authorized.GET("/event/:id", bh.GetEventHandler().GetEventById())
+		authorized.GET("/event/account/:id", bh.GetEventHandler().GetEventByAccountId())
+		authorized.POST("/event", bh.GetEventHandler().CreateEvent())
+		authorized.PUT("/event", bh.GetEventHandler().UpdateEvent())
+		authorized.PUT("/event/authority", bh.GetEventHandler().UpdateAuthority())
+		authorized.DELETE("/event/:id", bh.GetEventHandler().DeleteEvent())
+		// Pay
+		authorized.GET("/pay/event/:eventId", bh.GetPayHandler().GetPaysByEventId())
+		authorized.GET("/pay/:id", bh.GetPayHandler().GetPayById())
+		authorized.GET("/pay/account/:accountId/event/:eventId", bh.GetPayHandler().GetPaysByAccountIdAndEventId())
+		authorized.POST("/pay", bh.GetPayHandler().CreatePay())
+		authorized.PUT("/pay/:id", bh.GetPayHandler().UpdatePay())
+		authorized.DELETE("/pay/:id", bh.GetPayHandler().DeletePay())
+		authorized.POST("/pay/account/:id", bh.GetPayHandler().AddAccountToPay())
+		authorized.DELETE("/pay/account/:id", bh.GetPayHandler().DeleteAccountFromPay())
+		// Friend
+		authorized.GET("/friend/:id", bh.GetFriendHandler().GetFriendsByAccountId())
+		authorized.POST("/friend", bh.GetFriendHandler().SendFriendRequest())
+		authorized.PUT("/friend/:id", bh.GetFriendHandler().AcceptFriend())
+		authorized.DELETE("/friend/:id", bh.GetFriendHandler().DeleteFriend())
 	}
+	return r
 }
