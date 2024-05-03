@@ -51,9 +51,7 @@ func (sc *sessionHandler) Login() gin.HandlerFunc {
 			return
 		}
 
-		c.SetSameSite(http.SameSiteNoneMode)
-		c.SetCookie("jwtToken", tokenString, 3600, "/", "localhost", true, true)
-		//c.Header("Set-Cookie", "jwtToken="+tokenString+"; Path=/; Domain=localhost; Max-Age=3600; SameSite=None")
+		c.Header("Set-Cookie", "jwtToken="+tokenString+"; Path='/'; Domain=localhost; Max-Age=3600; Secure; SameSite=None")
 		c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 	}
 }

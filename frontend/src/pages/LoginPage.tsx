@@ -17,7 +17,8 @@ function LoginPage() {
       const response = await axios.post('http://localhost:8080/login', data, { // 変更
         headers: { // 追加
           'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        },
+        withCredentials: true
       });
       console.log('Login successful:', response.data);
     } catch (error) {
