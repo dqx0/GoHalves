@@ -14,6 +14,7 @@ import (
 type ISessionHandler interface {
 	Login() gin.HandlerFunc
 	CheckSession(c *gin.Context)
+	IsLoggedIn(c *gin.Context) bool
 }
 type sessionHandler struct {
 	bu usecase.IBaseUsecase
@@ -81,8 +82,9 @@ func (sc *sessionHandler) CheckSession(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not regenerate token"})
 			return
 		}
+		account, _ := sc.bu.GetAccountUsecase().GetAccountByUserId(claims["userId"].(string))
 		c.SetCookie("jwtToken", newToken, 3600, "/", "localhost", false, true)
-		c.Set("userId", claims["userId"])
+		c.Set("userId", account.ID)
 	}
 }
 
@@ -101,4 +103,20 @@ func (sc *sessionHandler) resetTokenExpiration(claims jwt.MapClaims) (string, er
 		return "", err
 	}
 	return tokenString, nil
+}
+func (sc *sessionHandler) IsLoggedIn(c *gin.Context) bool {
+	tokenString, err := c.Cookie("jwtToken")
+	if err != nil {
+		return false
+	}
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+	})
+	if err != nil {
+		return false
+	}
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return true
+	}
+	return false
 }

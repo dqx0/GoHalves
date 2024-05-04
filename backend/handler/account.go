@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -28,13 +27,17 @@ func (ac *accountHandler) GetAccountById() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var account model.Account
 		au := ac.bu.GetAccountUsecase()
-		idStr := c.Param("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		id, ok := c.Get("userId")
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user id"})
 			return
 		}
-		account, err = au.GetAccountById(id)
+		idUint, ok := id.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
+			return
+		}
+		account, err := au.GetAccountById(int(idUint))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -43,6 +46,7 @@ func (ac *accountHandler) GetAccountById() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"account": account})
 	}
 }
+
 func (ac *accountHandler) CreateAccount() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var account model.Account
@@ -81,6 +85,7 @@ func (ac *accountHandler) UpdateAccount() gin.HandlerFunc {
 		au := ac.bu.GetAccountUsecase()
 		err := c.BindJSON(&account)
 		if err != nil {
+
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 			return
 		}

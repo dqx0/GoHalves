@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/dqx0/GoHalves/go/handler"
 	"github.com/gin-gonic/gin"
 )
@@ -21,16 +23,23 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 		c.Next()
 	})
 	r.POST("/login", bh.GetSessionHandler().Login())
-	r.POST("/account", bh.GetAccountHandler().CreateAccount())
+	r.POST("/account", func(c *gin.Context) {
+		if bh.GetSessionHandler().IsLoggedIn(c) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Already logged in"})
+			return
+		}
+		c.Next()
+	}, bh.GetAccountHandler().CreateAccount())
+
 	authorized := r.Group("/")
 	authorized.Use(bh.GetSessionHandler().CheckSession)
 	{
 		//test
-		authorized.GET("/", bh.GetTestHandler().Test())
+		authorized.GET("/", bh.GetAccountHandler().GetAccountById())
 		// Account
-		authorized.GET("/account/:id", bh.GetAccountHandler().GetAccountById())
-		authorized.PUT("/account/:id", bh.GetAccountHandler().UpdateAccount())
-		authorized.DELETE("/account/:id", bh.GetAccountHandler().DeleteAccount())
+		authorized.GET("/account", bh.GetAccountHandler().GetAccountById())
+		authorized.PUT("/account", bh.GetAccountHandler().UpdateAccount())
+		authorized.DELETE("/account", bh.GetAccountHandler().DeleteAccount())
 		// Event
 		authorized.GET("/event/:id", bh.GetEventHandler().GetEventById())
 		authorized.GET("/event/account/:id", bh.GetEventHandler().GetEventByAccountId())

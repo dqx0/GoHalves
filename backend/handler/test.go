@@ -17,8 +17,10 @@ func NewTestHandler() ITestHandler {
 func (th *testHandler) Test() gin.HandlerFunc {
 	fmt.Println("test")
 	return func(c *gin.Context) {
+		userId, ok := c.Get("userId")
 		c.JSON(200, gin.H{
-			"message": "Hello World",
+			"message": userId,
+			"ok":      ok,
 		})
 	}
 }
