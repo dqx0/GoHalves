@@ -23,7 +23,7 @@ func NewSessionUsecase(br repository.IBaseRepository) ISessionUsecase {
 func (su *sessionUsecase) Login(username string, password string) (bool, error) {
 	sr := su.br.GetAccountRepository()
 	user := model.Account{}
-	err := sr.GetAccountByAccountId(username, &user)
+	err := sr.GetAccountByUserId(username, &user)
 	if err != nil {
 		return false, err
 	}

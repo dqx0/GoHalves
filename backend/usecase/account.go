@@ -9,6 +9,7 @@ import (
 type IAccountUsecase interface {
 	GetAccounts() ([]model.Account, error)
 	GetAccountById(accountId int) (model.Account, error)
+	GetAccountByUserId(userId string) (model.Account, error)
 	CreateAccount(account model.Account) (model.Account, error)
 	UpdateAccount(accountId int, account model.Account) (model.Account, error)
 	DeleteAccount(accountId int) (model.Account, error)
@@ -37,6 +38,14 @@ func (au *accountUsecase) GetAccountById(accountId int) (model.Account, error) {
 	}
 	return account, nil
 }
+func (au *accountUsecase) GetAccountByUserId(userId string) (model.Account, error) {
+	account := model.Account{}
+	ar := au.br.GetAccountRepository()
+	if err := ar.GetAccountByUserId(userId, &account); err != nil {
+		return model.Account{}, err
+	}
+	return account, nil
+}
 func (au *accountUsecase) CreateAccount(account model.Account) (model.Account, error) {
 	av := au.bv.GetAccountValidator()
 	ar := au.br.GetAccountRepository()
@@ -51,7 +60,7 @@ func (au *accountUsecase) CreateAccount(account model.Account) (model.Account, e
 func (au *accountUsecase) UpdateAccount(accountId int, account model.Account) (model.Account, error) {
 	av := au.bv.GetAccountValidator()
 	ar := au.br.GetAccountRepository()
-	if err := av.AccountValidate(&account); err != nil {
+	if err := av.UpdateAccountValidate(&account); err != nil {
 		return model.Account{}, err
 	}
 	if err := ar.UpdateAccount(accountId, &account); err != nil {

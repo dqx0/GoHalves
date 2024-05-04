@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/dqx0/GoHalves/go/model"
 	"gorm.io/gorm"
 )
@@ -8,7 +10,7 @@ import (
 type IAccountRepository interface {
 	GetAccounts(accounts *[]model.Account) error
 	GetAccountById(id int, account *model.Account) error
-	GetAccountByAccountId(id string, account *model.Account) error
+	GetAccountByUserId(id string, account *model.Account) error
 	CheckAccountInfo(userId string, password string) (bool, error)
 	CreateAccount(account *model.Account) error
 	UpdateAccount(id int, account *model.Account) error
@@ -54,7 +56,7 @@ func (ar *accountRepository) GetAccountById(id int, account *model.Account) erro
 	return nil
 }
 
-func (ar *accountRepository) GetAccountByAccountId(id string, account *model.Account) error {
+func (ar *accountRepository) GetAccountByUserId(id string, account *model.Account) error {
 	if err := ar.db.Where(&model.Account{UserID: id}).Find(&account).Error; err != nil {
 		return err
 	}
@@ -70,9 +72,15 @@ func (ar *accountRepository) CreateAccount(account *model.Account) error {
 	return nil
 }
 func (ar *accountRepository) UpdateAccount(id int, account *model.Account) error {
+	updateData := map[string]interface{}{
+		"UserID": account.UserID,
+		"Name":   account.Name,
+		"Email":  account.Email,
+	}
 
-	result := ar.db.Model(&model.Account{}).Where("id = ?", id).Updates(account)
+	result := ar.db.Model(&model.Account{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
+		fmt.Println(result.Error)
 		return result.Error
 	}
 
