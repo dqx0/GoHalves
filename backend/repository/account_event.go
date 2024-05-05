@@ -39,7 +39,7 @@ func (aer *accountEventRepository) GetAccountEventByEventIdAndAccountId(eventId 
 	return nil
 }
 func (aer *accountEventRepository) CreateAccountEvent(accountEvent *model.AccountEvent) error {
-	if err := aer.db.Create(&accountEvent).Error; err != nil {
+	if err := aer.db.Create(accountEvent).Error; err != nil {
 		return err
 	}
 	return nil

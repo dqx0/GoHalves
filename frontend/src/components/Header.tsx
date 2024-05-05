@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Button, IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
+import Cookies from 'js-cookie';
 
 function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get('jwtToken');
+    console.log('token:', token);
+    setIsLoggedIn(!!token);
+  }, []);
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (
@@ -26,9 +34,15 @@ function Header() {
         <ListItem button key="home" component={Link} to="/">
           <ListItemText primary="ホーム" />
         </ListItem>
-        <ListItem button key="login" component={Link} to="/login">
-          <ListItemText primary="ログイン" />
-        </ListItem>
+        {isLoggedIn ? (
+          <ListItem button key="logout" component={Link} to="/logout">
+            <ListItemText primary="ログアウト" />
+          </ListItem>
+        ) : (
+          <ListItem button key="login" component={Link} to="/login">
+            <ListItemText primary="ログイン" />
+          </ListItem>
+        )}
       </List>
     </div>
   );
@@ -39,13 +53,12 @@ function Header() {
         <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(true)}>
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          マイアプリ
+        <Typography variant="h6">
+          App Name
         </Typography>
-        <Button color="inherit">ホーム</Button>
-        <Button color="inherit">ログイン</Button>
+        <Button color="inherit">{isLoggedIn ? 'ログアウト' : 'ログイン'}</Button>
       </Toolbar>
-      <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)}>
+      <Drawer open={isOpen} onClose={toggleDrawer(false)}>
         {list()}
       </Drawer>
     </AppBar>

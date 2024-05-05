@@ -5,7 +5,6 @@ function HomePage() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    console.log('Fetching data...');
     const fetchData = async () => {
       try {
         const response = await axios.get('http://localhost:8080/', { withCredentials: true });

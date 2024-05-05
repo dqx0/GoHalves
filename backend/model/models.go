@@ -80,3 +80,10 @@ type AccountPay struct {
 	Account   Account `gorm:"foreignKey:AccountID"`
 	Pay       Pay     `gorm:"foreignKey:PayID"`
 }
+
+func (ae *AccountEvent) TableName() string {
+	return "accounts_events"
+}
+func (ap *AccountPay) TableName() string {
+	return "accounts_pays"
+}
