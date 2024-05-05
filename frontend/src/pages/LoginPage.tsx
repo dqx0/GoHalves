@@ -1,11 +1,13 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { TextField, Button, Container } from '@mui/material';
-import qs from 'qs'; // 追加
+import { useNavigate } from 'react-router-dom';
+import qs from 'qs';
 
 function LoginPage() {
   const [user_id, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -20,7 +22,7 @@ function LoginPage() {
         },
         withCredentials: true
       });
-      console.log('Login successful:', response.data);
+      window.location.href = '/';
     } catch (error) {
       console.error('Login error:', error);
     }

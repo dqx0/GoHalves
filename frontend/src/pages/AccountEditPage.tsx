@@ -15,17 +15,11 @@ function AccountEditPage() {
 
   useEffect(() => {
     // 初期値をAPIから取得
-    axios.get('http://localhost:8080/account', { withCredentials: true }).then(response => {
-    setAccount(response.data.account);
+    axios.get('http://localhost:8080/account', { withCredentials: true })
+    .then(response => {
+      setAccount(response.data.account);
     });
   }, []);
-  useEffect(() => {
-    console.log(account);
-    if (account) {
-      console.log(account.UserID);
-      console.log(account.Name);
-    }
-  }, [account]);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
     setAccount({

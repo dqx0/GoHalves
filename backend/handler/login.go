@@ -13,6 +13,7 @@ import (
 
 type ISessionHandler interface {
 	Login() gin.HandlerFunc
+	Logout() gin.HandlerFunc
 	CheckSession(c *gin.Context)
 	IsLoggedIn(c *gin.Context) bool
 }
@@ -52,13 +53,27 @@ func (sc *sessionHandler) Login() gin.HandlerFunc {
 			return
 		}
 
-		c.Header("Set-Cookie", "jwtToken="+tokenString+"; Path='/'; Domain=localhost; Max-Age=3600; Secure; SameSite=None")
+		c.Header("Set-Cookie", "jwtToken="+tokenString+"; Path='/'; Domain=localhost; Max-Age=3600;")
 		c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 	}
 }
-
+func (sc *sessionHandler) Logout() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.SetCookie(
+			"jwtToken",
+			"",
+			-1,
+			"/",
+			"localhost",
+			false,
+			true,
+		)
+		c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
+	}
+}
 func (sc *sessionHandler) CheckSession(c *gin.Context) {
 	tokenString, err := c.Cookie("jwtToken")
+	fmt.Println(tokenString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization cookie is required"})
 		return
@@ -80,10 +95,19 @@ func (sc *sessionHandler) CheckSession(c *gin.Context) {
 		newToken, err := sc.resetTokenExpiration(claims)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not regenerate token"})
+			c.SetCookie(
+				"jwtToken",
+				"",
+				-1,
+				"/",
+				"localhost",
+				false,
+				true,
+			)
 			return
 		}
 		account, _ := sc.bu.GetAccountUsecase().GetAccountByUserId(claims["userId"].(string))
-		c.SetCookie("jwtToken", newToken, 3600, "/", "localhost", false, true)
+		c.SetCookie("jwtToken", newToken, 3600, "/", "localhost", false, false)
 		c.Set("userId", account.ID)
 	}
 }

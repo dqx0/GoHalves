@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"fmt"
+
 	"github.com/dqx0/GoHalves/go/model"
 	"github.com/dqx0/GoHalves/go/repository"
 	"github.com/dqx0/GoHalves/go/validator"
@@ -47,32 +49,53 @@ func (eu *eventUsecase) CreateEvent(event model.Event, createdAccountId int) (mo
 	if err := ev.EventValidate(&event); err != nil {
 		return model.Event{}, err
 	}
+
+	// atomicBlock 関数の定義
 	atomicBlock := func(br repository.IBaseRepository) error {
+		// イベントリポジトリを取得
 		er := br.GetEventRepository()
-		// イベント作成
+
+		// トランザクション内でイベントを作成
 		if err := er.CreateEvent(&event); err != nil {
 			return err
 		}
-		accountEvent := model.AccountEvent{
-			AccountID:   uint(createdAccountId),
-			EventID:     event.ID,
-			AuthorityID: 0,
-		}
 
-		// アカウントイベント作成
-		aer := eu.br.GetAccountEventRepository()
-		if err := aer.CreateAccountEvent(&accountEvent); err != nil {
-			if err := er.DeleteEvent(int(event.ID), &event); err != nil {
-				return err
-			}
+		// 作成されたイベントを取得
+		created := model.Event{}
+		if err := er.GetEventById(int(event.ID), &created); err != nil {
+			// エラーが発生した場合、トランザクションをロールバックしてエラーを返す
 			return err
 		}
-		return nil
+
+		fmt.Println("created event: ", created)
+
+		// アカウントイベントを作成
+		accountEvent := model.AccountEvent{
+			AccountID:   uint(createdAccountId),
+			EventID:     created.ID, // 作成されたイベントのIDを使用する
+			AuthorityID: 1,
+		}
+
+		// アカウントイベントリポジトリを取得
+		aer := br.GetAccountEventRepository()
+
+		// トランザクション内でアカウントイベントを作成
+		if err := aer.CreateAccountEvent(&accountEvent); err != nil {
+			return err
+		}
+		fmt.Println("created accountEvent: ", accountEvent)
+		return nil // トランザクションが正常に完了した場合は nil を返す
 	}
 
-	err := eu.br.Atomic(atomicBlock)
-	return event, err
+	// トランザクションを開始し、提供された関数を実行する
+	if err := eu.br.Atomic(atomicBlock); err != nil {
+		return model.Event{}, err // トランザクション内でエラーが発生した場合、エラーを返す
+	}
+
+	// 正常にトランザクションが終了した場合、作成したイベントを返す
+	return event, nil
 }
+
 func (eu *eventUsecase) UpdateEvent(eventId int, event model.Event) (model.Event, error) {
 	ev := eu.bv.GetEventValidator()
 	er := eu.br.GetEventRepository()

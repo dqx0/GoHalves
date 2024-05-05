@@ -67,10 +67,9 @@ func (ec *eventHandler) GetEventByAccountId() gin.HandlerFunc {
 func (ec *eventHandler) CreateEvent() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newEvent model.Event
-		accountIdStr := c.Param("id")
-		accountId, err := strconv.Atoi(accountIdStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		idInt, ok := getUserIdFromContext(c)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user id"})
 			return
 		}
 		if err := c.ShouldBindJSON(&newEvent); err != nil {
@@ -78,7 +77,7 @@ func (ec *eventHandler) CreateEvent() gin.HandlerFunc {
 			return
 		}
 		eu := ec.bu.GetEventUsecase()
-		createdEvent, err := eu.CreateEvent(newEvent, accountId)
+		createdEvent, err := eu.CreateEvent(newEvent, idInt)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
