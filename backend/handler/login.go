@@ -73,7 +73,6 @@ func (sc *sessionHandler) Logout() gin.HandlerFunc {
 }
 func (sc *sessionHandler) CheckSession(c *gin.Context) {
 	tokenString, err := c.Cookie("jwtToken")
-	fmt.Println(tokenString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization cookie is required"})
 		return

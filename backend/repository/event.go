@@ -21,9 +21,9 @@ func NewEventRepository(db *gorm.DB) IEventRepository {
 }
 
 func (er *eventRepository) GetEventsByAccountId(accountId int, events *[]model.Event) error {
-	if err := er.db.Joins("join account_events on account_events.event_id = events.id").
-		Joins("join accounts on account_events.account_id = accounts.id").
-		Where("accounts.user_id = ?", accountId).
+	if err := er.db.Joins("join accounts_events on accounts_events.event_id = events.id").
+		Joins("join accounts on accounts_events.account_id = accounts.id").
+		Where("accounts.id = ?", uint(accountId)).
 		Find(events).Error; err != nil {
 		return err
 	}

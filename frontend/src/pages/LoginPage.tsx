@@ -12,17 +12,17 @@ function LoginPage() {
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      const data = qs.stringify({ // 追加
+      const data = qs.stringify({
         user_id: user_id,
         password: password
       });
-      const response = await axios.post('http://localhost:8080/login', data, { // 変更
-        headers: { // 追加
+      const response = await axios.post('http://localhost:8080/login', data, {
+        headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         withCredentials: true
       });
-      window.location.href = '/';
+      navigate('/');
     } catch (error) {
       console.error('Login error:', error);
     }

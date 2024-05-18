@@ -32,13 +32,17 @@ func (ec *eventHandler) GetEventById() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var event model.Event
 		eu := ec.bu.GetEventUsecase()
-		idStr := c.Param("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
+		id, ok := c.Get("userId")
+		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
 			return
 		}
-		event, err = eu.GetEventById(id)
+		idUint, ok := id.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
+			return
+		}
+		event, err := eu.GetEventById(int(idUint))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -50,13 +54,17 @@ func (ec *eventHandler) GetEventByAccountId() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var events []model.Event
 		eu := ec.bu.GetEventUsecase()
-		idStr := c.Param("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
+		id, ok := c.Get("userId")
+		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
 			return
 		}
-		events, err = eu.GetEventsByAccountId(id)
+		idUint, ok := id.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
+			return
+		}
+		events, err := eu.GetEventsByAccountId(int(idUint))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
