@@ -34,8 +34,8 @@ func (pr *payRepository) GetPaysByEventId(eventId int, pays *[]model.Pay) error 
 	return nil
 }
 func (pr *payRepository) GetPaysByAccountIdAndEventId(accountId int, eventId int, pays *[]model.Pay) error {
-	if err := pr.db.Joins("JOIN account_pays ON account_pays.pay_id = pays.id").
-		Where("account_pays.account_id = ? AND pays.event_id = ?", accountId, eventId).
+	if err := pr.db.Joins("JOIN accounts_pays ON accounts_pays.pay_id = pays.id").
+		Where("accounts_pays.account_id = ? AND pays.event_id = ?", accountId, eventId).
 		Find(&pays).Error; err != nil {
 		return err
 	}
