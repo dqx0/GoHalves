@@ -21,8 +21,6 @@ const CreateEventPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to create event:', error);
-      // リクエストが失敗したときの処理を書く
-      // 例: エラーメッセージを表示するなど
     }
   };
 

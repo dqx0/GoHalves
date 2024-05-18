@@ -3,16 +3,37 @@ import { AppBar, Toolbar, Typography, Button, IconButton, Drawer, List, ListItem
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import Cookies from 'js-cookie';
+import { Switch } from '@mui/material';
 
-function Header() {
+interface HeaderProps {
+  darkMode: boolean;
+  setDarkMode: (mode: boolean) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ darkMode, setDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const saveDarkModeInCookie = (darkMode: boolean) => {
+    Cookies.set('darkMode', darkMode ? 'true' : 'false');
+  };
+
+  const getDarkModeFromCookie = (): boolean => {
+    return Cookies.get('darkMode') === 'true';
+  };
+
   useEffect(() => {
     const token = Cookies.get('jwtToken');
-    console.log('token:', token);
     setIsLoggedIn(!!token);
+
+    const darkModeFromCookie = getDarkModeFromCookie();
+    setDarkMode(darkModeFromCookie);
   }, []);
+
+  const handleDarkModeChange = (darkMode: boolean) => {
+    setDarkMode(darkMode);
+    saveDarkModeInCookie(darkMode);
+  };
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
     if (
@@ -56,6 +77,7 @@ function Header() {
         <Typography variant="h6">
           App Name
         </Typography>
+        <Switch checked={darkMode} onChange={() => handleDarkModeChange(!darkMode)} />
         <Button color="inherit">{isLoggedIn ? 'ログアウト' : 'ログイン'}</Button>
       </Toolbar>
       <Drawer open={isOpen} onClose={toggleDrawer(false)}>
@@ -63,6 +85,6 @@ function Header() {
       </Drawer>
     </AppBar>
   );
-}
+};
 
 export default Header;
