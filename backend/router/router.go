@@ -39,6 +39,7 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 		authorized.GET("/", bh.GetAccountHandler().GetAccountById())
 		// Account
 		authorized.GET("/account", bh.GetAccountHandler().GetAccountById())
+		authorized.POST("/accounts", bh.GetAccountHandler().CreateAccount())
 		authorized.PUT("/account", bh.GetAccountHandler().UpdateAccount())
 		authorized.DELETE("/account", bh.GetAccountHandler().DeleteAccount())
 		// Event
