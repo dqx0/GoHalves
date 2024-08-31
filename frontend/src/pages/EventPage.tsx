@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent, Typography, Grid, Container, CardActionArea } from '@mui/material';
 import styled from '@emotion/styled';
@@ -35,44 +36,49 @@ const StyledTypography = styled(Typography)({
   margin: '16px',
 });
 
-const EventsList = () => {
-  const [events, setEvents] = useState([]);
-
-  useEffect(() => {
-    axios.get('http://localhost:8080/event/account', { withCredentials: true })
-      .then(response => {
-        setEvents(response.data.events);
-      })
-      .catch(error => {
-        console.error('There was an error!', error);
-      });
-  }, []);
-
-  return (
-    <Container>
-      <Typography variant="h3" component="h2" gutterBottom sx={{ marginTop: '20px' }}>
-        参加中のイベント
-      </Typography>
-      <Grid container spacing={3} justifyContent="center">
-        {events.map((event: Event) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={event.ID}>
-            <StyledCard>
-              <CardActionArea>
-                <StyledCardContent>
-                  <StyledTypography variant="h5">
-                    {event.Title}
-                  </StyledTypography>
-                  <StyledTypography variant="body2" color="textSecondary">
-                    {event.Description}
-                  </StyledTypography>
-                </StyledCardContent>
-              </CardActionArea>
-            </StyledCard>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  );
-}
-
-export default EventsList;
+const EventPage = () => {
+    const [events, setEvents] = useState<Event[]>([]);
+    const { id } = useParams();
+    useEffect(() => {
+      axios.get(`http://localhost:8080/event/${id}`, { withCredentials: true })
+        .then(response => {
+          const eventData: Event[] = Array.isArray(response.data.event) ? response.data.event : [response.data.event];
+          setEvents(eventData);
+        })
+        .catch(error => {
+          console.error('There was an error!', error);
+        });
+    }, []);
+  
+    if (events.length === 0) {
+      return <div>Loading...</div>;
+    }
+  
+    return (
+      <Container>
+        <Typography variant="h3" component="h2" gutterBottom sx={{ marginTop: '20px' }}>
+          参加中のイベント
+        </Typography>
+        <Grid container spacing={3} justifyContent="center">
+          {events.map((event: Event) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={event.ID}>
+              <StyledCard>
+                <CardActionArea>
+                  <StyledCardContent>
+                    <StyledTypography variant="h5">
+                      {event.Title}
+                    </StyledTypography>
+                    <StyledTypography variant="body2" color="textSecondary">
+                      {event.Description}
+                    </StyledTypography>
+                  </StyledCardContent>
+                </CardActionArea>
+              </StyledCard>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    );
+  };
+  
+  export default EventPage;

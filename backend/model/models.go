@@ -24,7 +24,7 @@ type Event struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	Pays        []Pay     `gorm:"foreignKey:EventID"`
-	Accounts    []Account `gorm:"many2many:account_events"`
+	Accounts    []Account `gorm:"many2many:accounts_events"`
 }
 
 type Pay struct {

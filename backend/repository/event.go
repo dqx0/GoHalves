@@ -31,7 +31,7 @@ func (er *eventRepository) GetEventsByAccountId(accountId int, events *[]model.E
 }
 
 func (er *eventRepository) GetEventById(id int, event *model.Event) error {
-	if err := er.db.Where(&model.Event{ID: uint(id)}).Find(&event).Error; err != nil {
+	if err := er.db.Preload("Accounts").Preload("Pays").Where(&model.Event{ID: uint(id)}).Find(&event).Error; err != nil {
 		return err
 	}
 

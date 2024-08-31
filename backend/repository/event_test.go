@@ -16,7 +16,7 @@ func setupTestDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err := db.AutoMigrate(&model.Account{}, &model.Event{}, &model.AccountEvent{}); err != nil {
+	if err := db.AutoMigrate(&model.Account{}, &model.Event{}, &model.AccountEvent{}, &model.Pay{}, &model.Authority{}, &model.Friend{}, &model.AccountPay{}); err != nil {
 		return nil, err
 	}
 
@@ -27,7 +27,7 @@ func cleanupDB(db *gorm.DB) {
 	db.Exec("DROP TABLE IF EXISTS events")
 	db.Exec("DROP TABLE IF EXISTS accounts_events")
 	db.Exec("DROP TABLE IF EXISTS pays")
-	db.Exec("DROP TABLE IF EXISTS authoritiess")
+	db.Exec("DROP TABLE IF EXISTS authorities")
 	db.Exec("DROP TABLE IF EXISTS friends")
 	db.Exec("DROP TABLE IF EXISTS accounts_pays")
 	db.AutoMigrate(&model.Account{}, &model.Event{}, &model.AccountEvent{})

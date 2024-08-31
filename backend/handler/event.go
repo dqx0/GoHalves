@@ -32,17 +32,13 @@ func (ec *eventHandler) GetEventById() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var event model.Event
 		eu := ec.bu.GetEventUsecase()
-		id, ok := c.Get("userId")
-		if !ok {
+		idStr := c.Param("id")
+		idInt, err := strconv.Atoi(idStr)
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
 			return
 		}
-		idUint, ok := id.(uint)
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
-			return
-		}
-		event, err := eu.GetEventById(int(idUint))
+		event, err = eu.GetEventById(idInt)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
