@@ -111,22 +111,22 @@ func (pc *payHandler) CreatePay() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var pay model.Pay
 		pu := pc.bu.GetPayUsecase()
-		idStr := c.Param("id")
-		accountId, err := strconv.Atoi(idStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		idStr, ok := c.Get("userId")
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user id"})
 			return
 		}
+		idUint, ok := idStr.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
+			return
+		}
+		accountId := int(idUint)
 		if err := c.ShouldBindJSON(&pay); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		accountIdsToPay := []int{}
-		if err := c.ShouldBindJSON(&accountIdsToPay); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		pay, err = pu.CreatePay(pay, accountId, accountIdsToPay)
+		pay, err := pu.CreatePay(pay, accountId, getAccountIDs(pay))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -197,4 +197,11 @@ func (pc *payHandler) DeleteAccountFromPay() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{"accountPay": accountPay})
 	}
+}
+func getAccountIDs(pay model.Pay) []int {
+	var accountIDs []int
+	for _, account := range pay.Accounts {
+		accountIDs = append(accountIDs, int(account.ID))
+	}
+	return accountIDs
 }

@@ -24,7 +24,7 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 	})
 	r.POST("/login", bh.GetSessionHandler().Login())
 	r.GET("/logout", bh.GetSessionHandler().Logout())
-
+	r.GET("/:id", bh.GetEventHandler().GetCalcData())
 	r.POST("/account", func(c *gin.Context) {
 		if bh.GetSessionHandler().IsLoggedIn(c) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Already logged in"})

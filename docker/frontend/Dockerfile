@@ -9,13 +9,10 @@ COPY ../../frontend/package*.json ./
 RUN npm install
 
 # ローカルのソースコードをコンテナにコピーします。
-COPY ../../frontend/ .
+COPY ../../frontend/ ./
 
-# Reactアプリケーションのビルドを実行します。
-RUN npm run build
+# 開発用のホットリロードを使用するために、開発サーバーを起動します。
+CMD ["npm", "start"]
 
 # ポート番号を指定します。
 EXPOSE 3000
-
-# アプリケーションを起動します。
-CMD ["npm", "start"]

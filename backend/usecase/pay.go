@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/dqx0/GoHalves/go/model"
 	"github.com/dqx0/GoHalves/go/repository"
 	"github.com/dqx0/GoHalves/go/validator"
@@ -52,38 +55,52 @@ func (pu *payUsecase) CreatePay(pay model.Pay, createdAccountId int, accountIdsT
 	pv := pu.bv.GetPayValidator()
 
 	// バリデーション
-	if err := pv.PayValidate(&pay); err != nil {
+	if err := pv.CreatePayValidate(&pay); err != nil {
 		return model.Pay{}, err
 	}
 
+	// トランザクション内での処理を定義
 	atomicBlock := func(br repository.IBaseRepository) error {
 		pr := br.GetPayRepository()
 
-		// 支払い作成
+		// Payレコードの作成
 		if err := pr.CreatePay(&pay); err != nil {
 			return err
 		}
 
+		// pay.IDが設定されていることを確認
+		if pay.ID == 0 {
+			return fmt.Errorf("Pay IDが正しく設定されていません")
+		}
+
+		log.Println("pay.ID", pay.ID)
+
+		// AccountPayレコードの作成
+		apr := br.GetAccountPayRepository()
+
 		for _, accountId := range accountIdsToPay {
 			accountPay := model.AccountPay{
 				AccountID: uint(accountId),
-				PayID:     pay.ID,
+				PayID:     pay.ID, // ここでpay.IDを使用
 			}
 
-			// アカウント支払い作成
-			apr := pu.br.GetAccountPayRepository()
+			// アカウント支払いの作成
 			if err := apr.CreateAccountPay(&accountPay); err != nil {
-				if err := pr.DeletePay(int(pay.ID), &pay); err != nil {
-					return err
-				}
-				return err
+				// エラーが発生した場合、トランザクション内のすべての操作をロールバック
+				return fmt.Errorf("アカウント支払いの作成に失敗しました: %w", err)
 			}
 		}
+
 		return nil
 	}
 
+	// トランザクションの実行
 	err := pu.br.Atomic(atomicBlock)
-	return pay, err
+	if err != nil {
+		return model.Pay{}, err
+	}
+
+	return pay, nil
 }
 func (pu *payUsecase) UpdatePay(id int, pay model.Pay) (model.Pay, error) {
 	pr := pu.br.GetPayRepository()

@@ -6,6 +6,7 @@ import (
 
 type IBaseRepository interface {
 	Atomic(fn func(IBaseRepository) error) error
+	BeginTransaction() *gorm.DB
 	GetAccountRepository() IAccountRepository
 	GetEventRepository() IEventRepository
 	GetPayRepository() IPayRepository
@@ -25,6 +26,9 @@ func (br *baseRepository) Atomic(fn func(IBaseRepository) error) error {
 	return br.db.Transaction(func(tx *gorm.DB) error {
 		return fn(NewBaseRepository(tx))
 	})
+}
+func (br *baseRepository) BeginTransaction() *gorm.DB {
+	return br.db.Begin()
 }
 func (br *baseRepository) GetAccountRepository() IAccountRepository {
 	return NewAccountRepository(br.db)

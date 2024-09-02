@@ -28,15 +28,16 @@ type Event struct {
 }
 
 type Pay struct {
-	ID         uint `gorm:"primaryKey"`
-	PaidUserID uint `gorm:"not null"`
-	EventID    uint `gorm:"not null"`
-	Amount     uint `gorm:"not null"`
+	ID         uint   `gorm:"primaryKey"`
+	PaidUserID uint   `gorm:"not null"`
+	EventID    uint   `gorm:"not null"`
+	Title      string `gorm:"not null"`
+	Amount     int64  `gorm:"not null"`
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	PaidUser   Account   `gorm:"foreignKey:PaidUserID"`
 	Event      Event     `gorm:"foreignKey:EventID"`
-	Accounts   []Account `gorm:"many2many:account_pays"`
+	Accounts   []Account `gorm:"many2many:accounts_pays"`
 }
 
 type AccountEvent struct {
