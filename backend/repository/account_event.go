@@ -21,13 +21,21 @@ func NewAccountEventRepository(db *gorm.DB) IAccountEventRepository {
 	return &accountEventRepository{db: db}
 }
 func (aer *accountEventRepository) GetAccountsByEventId(eventId int, accounts *[]model.Account) error {
-	if err := aer.db.Table("account_events").Where("event_id = ?", eventId).Joins("JOIN accounts ON account_events.account_id = accounts.id").Find(&accounts).Error; err != nil {
+	if err := aer.db.Table("accounts_events").
+		Select("accounts.id, accounts.name, accounts.email, accounts.created_at, accounts.updated_at").
+		Joins("JOIN accounts ON accounts_events.account_id = accounts.id").
+		Where("accounts_events.event_id = ?", eventId).
+		Find(&accounts).Error; err != nil {
 		return err
 	}
 	return nil
 }
 func (aer *accountEventRepository) GetEventsByAccountId(accountId int, events *[]model.Event) error {
-	if err := aer.db.Table("account_events").Where("account_id = ?", accountId).Joins("JOIN events ON account_events.event_id = events.id").Find(&events).Error; err != nil {
+	if err := aer.db.Table("accounts_events").
+		Select("events.id, events.name, events.description, events.created_at, events.updated_at").
+		Joins("JOIN events ON accounts_events.event_id = events.id").
+		Where("accounts_events.account_id = ?", accountId).
+		Find(&events).Error; err != nil {
 		return err
 	}
 	return nil

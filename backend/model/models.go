@@ -13,8 +13,8 @@ type Account struct {
 	IsBot     bool   `gorm:"default:false"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Events    []Event `gorm:"many2many:account_events"`
-	Pays      []Pay   `gorm:"many2many:account_pays"`
+	Events    []Event `gorm:"many2many:accounts_events"`
+	Pays      []Pay   `gorm:"many2many:accounts_pays"`
 }
 
 type Event struct {

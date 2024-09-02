@@ -24,6 +24,7 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 	})
 	r.POST("/login", bh.GetSessionHandler().Login())
 	r.GET("/logout", bh.GetSessionHandler().Logout())
+
 	r.POST("/account", func(c *gin.Context) {
 		if bh.GetSessionHandler().IsLoggedIn(c) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Already logged in"})
@@ -45,6 +46,7 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 		// Event
 		authorized.GET("/event/:id", bh.GetEventHandler().GetEventById())
 		authorized.GET("/event/account", bh.GetEventHandler().GetEventByAccountId())
+		authorized.GET("/event/calc/:id", bh.GetEventHandler().GetCalcData())
 		authorized.POST("/event", bh.GetEventHandler().CreateEvent())
 		authorized.PUT("/event", bh.GetEventHandler().UpdateEvent())
 		authorized.PUT("/event/authority", bh.GetEventHandler().UpdateAuthority())
@@ -59,7 +61,7 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 		authorized.POST("/pay/account/:id", bh.GetPayHandler().AddAccountToPay())
 		authorized.DELETE("/pay/account/:id", bh.GetPayHandler().DeleteAccountFromPay())
 		// Friend
-		authorized.GET("/friend/:id", bh.GetFriendHandler().GetFriendsByAccountId())
+		authorized.GET("/friend", bh.GetFriendHandler().GetFriendsByAccountId())
 		authorized.POST("/friend", bh.GetFriendHandler().SendFriendRequest())
 		authorized.PUT("/friend/:id", bh.GetFriendHandler().AcceptFriend())
 		authorized.DELETE("/friend/:id", bh.GetFriendHandler().DeleteFriend())

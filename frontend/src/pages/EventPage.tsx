@@ -8,9 +8,21 @@ type Event = {
   ID: number;
   Title: string;
   Description: string;
+  Members: Account[];
+  Pays: Pay[];
   CreatedAt: string;
   UpdatedAt: string;
 };
+type Account = {
+  ID: number;
+  Username: string;
+};
+type Pay = {
+	ID: number;
+	PaidUser: Account;
+  Amount: number;
+	Accounts: Account[];
+}
 
 const StyledCard = styled(Card)({
   height: '200px',

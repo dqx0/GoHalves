@@ -40,7 +40,7 @@ func (apr *accountPayRepository) GetAccountPayByPayIdAndAccountId(payId int, acc
 	return nil
 }
 func (apr *accountPayRepository) GetPaysByAccountIdAndEventId(accountId int, eventId int, pays *[]model.Pay) error {
-	if err := apr.db.Table("account_pays").Where("account_id = ? AND event_id = ?", accountId, eventId).Joins("JOIN pays ON account_pays.pay_id = pays.id").Find(&pays).Error; err != nil {
+	if err := apr.db.Table("account_pays").Where("account_id = ? AND event_id = ?", accountId, eventId).Joins("JOIN pays ON accounts_pays.pay_id = pays.id").Find(&pays).Error; err != nil {
 		return err
 	}
 	return nil
