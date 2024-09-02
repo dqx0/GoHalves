@@ -26,13 +26,18 @@ func (fc *friendHandler) GetFriendsByAccountId() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var friends []model.Friend
 		fu := fc.bu.GetFriendUsecase()
-		idStr := c.Param("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
+		idAny, ok := c.Get("userId")
+		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
 			return
 		}
-		friends, err = fu.GetFriendsByAccountId(id, friends)
+		idUint, ok := idAny.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
+			return
+		}
+		id := int(idUint)
+		friends, err := fu.GetFriendsByAccountId(id, friends)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

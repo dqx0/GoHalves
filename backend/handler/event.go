@@ -12,6 +12,7 @@ import (
 type IEventHandler interface {
 	GetEventById() gin.HandlerFunc
 	GetEventByAccountId() gin.HandlerFunc
+	GetCalcData() gin.HandlerFunc
 	CreateEvent() gin.HandlerFunc
 	AddAccountToEvent() gin.HandlerFunc
 	UpdateEvent() gin.HandlerFunc
@@ -66,6 +67,23 @@ func (ec *eventHandler) GetEventByAccountId() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"events": events})
+	}
+}
+func (ec *eventHandler) GetCalcData() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cu := ec.bu.GetCalcUsecase()
+		idStr := c.Param("id")
+		idInt, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+			return
+		}
+		calcs, err := cu.CalculatePaymentForAccounts(idInt)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"calcs": calcs})
 	}
 }
 func (ec *eventHandler) CreateEvent() gin.HandlerFunc {
