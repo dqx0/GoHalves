@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -111,22 +112,12 @@ func (pc *payHandler) CreatePay() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var pay model.Pay
 		pu := pc.bu.GetPayUsecase()
-		idStr, ok := c.Get("userId")
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user id"})
-			return
-		}
-		idUint, ok := idStr.(uint)
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "User id is not uint"})
-			return
-		}
-		accountId := int(idUint)
 		if err := c.ShouldBindJSON(&pay); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		pay, err := pu.CreatePay(pay, accountId, getAccountIDs(pay))
+		fmt.Println(pay.PaidUser)
+		pay, err := pu.CreatePay(pay, int(pay.PaidUserID), getAccountIDs(pay))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

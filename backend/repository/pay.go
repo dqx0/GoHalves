@@ -28,7 +28,7 @@ func (pr *payRepository) GetPayById(id int, pay *model.Pay) error {
 	return nil
 }
 func (pr *payRepository) GetPaysByEventId(eventId int, pays *[]model.Pay) error {
-	if err := pr.db.Where("event_id = ?", eventId).Find(&pays).Error; err != nil {
+	if err := pr.db.Preload("Accounts").Where("event_id = ?", eventId).Find(&pays).Error; err != nil {
 		return err
 	}
 	return nil

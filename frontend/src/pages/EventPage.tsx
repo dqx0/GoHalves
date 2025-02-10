@@ -46,19 +46,27 @@ const EventPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState(0);
   const [paidUser, setPaidUser] = useState<Account | null>(null);
+  const [pays, setPays] = useState<Pay[]>([]);  // 追加
   const [selectedAccounts, setSelectedAccounts] = useState<Account[]>([]);
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/event/${id}`, { withCredentials: true })
-      .then((response) => {
-        const fetchedEvent: Event = response.data.event;
-        setEvent(fetchedEvent);
+    const fetchData = async () => {
+      try {
+        const [eventResponse, paysResponse] = await Promise.all([
+          axios.get(`http://localhost:8080/event/${id}`, { withCredentials: true }),
+          axios.get(`http://localhost:8080/pay/event/${id}`, { withCredentials: true })
+        ]);
+        
+        setEvent(eventResponse.data.event);
+        setPays(paysResponse.data.pays);
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching event data:', error);
+      } catch (error) {
+        console.error('Error fetching data:', error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   const handleOpen = () => setOpen(true);
@@ -83,6 +91,7 @@ const EventPage: React.FC = () => {
 
     try {
       const response = await axios.post('http://localhost:8080/pay', newPay, { withCredentials: true });
+      console.log(newPay)
       if (response.status === 201) {
         alert('Pay added successfully');
         handleClose();
@@ -93,17 +102,40 @@ const EventPage: React.FC = () => {
       console.error('Error adding pay:', error);
     }
   };
+  console.log(pays)
 
   return (
-    console.log(event),
-    console.log(event?.Accounts),
     <Container>
       <Typography variant="h4">Event Page</Typography>
       {event ? (
         <>
           <Typography variant="h5">{event.Title}</Typography>
           <Typography>{event.Description}</Typography>
-          <Button variant="contained" color="primary" onClick={handleOpen}>
+          <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>支払い一覧</Typography>
+          <Grid container spacing={2}>
+            {pays.map((pay) => (
+              <Grid item xs={12} sm={6} md={4} key={pay.ID}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6">{pay.Title}</Typography>
+                    <Typography>支払額: ¥{pay.Amount.toLocaleString()}</Typography>
+                    <Typography>支払者: {event.Accounts.find(acc => acc.ID === pay.PaidUserID)?.Name}</Typography>
+                    <Typography>対象者:</Typography>
+                    <Typography variant="body2">
+                      {pay.Accounts?.map(acc => acc.Name).join(', ')}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleOpen}
+            sx={{ mt: 3 }}
+          >
             Add Pay
           </Button>
           <Modal open={open} onClose={handleClose}>

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/dqx0/GoHalves/go/model"
 	"github.com/dqx0/GoHalves/go/repository"
@@ -62,33 +61,30 @@ func (pu *payUsecase) CreatePay(pay model.Pay, createdAccountId int, accountIdsT
 	// トランザクション内での処理を定義
 	atomicBlock := func(br repository.IBaseRepository) error {
 		pr := br.GetPayRepository()
+		ar := br.GetAccountRepository()
 
-		// Payレコードの作成
+		// 支払い対象のアカウント情報を取得
+		var accounts []model.Account
+		for _, accountId := range accountIdsToPay {
+			var account model.Account
+			if err := ar.GetAccountById(accountId, &account); err != nil {
+				return fmt.Errorf("アカウント情報の取得に失敗しました: %w", err)
+			}
+			accounts = append(accounts, account)
+		}
+
+		// 支払い情報を設定
+		pay.PaidUserID = uint(createdAccountId)
+		pay.Accounts = accounts
+
+		// Payレコードの作成（関連するAccountsも同時に保存）
 		if err := pr.CreatePay(&pay); err != nil {
-			return err
+			return fmt.Errorf("支払い情報の作成に失敗しました: %w", err)
 		}
 
 		// pay.IDが設定されていることを確認
 		if pay.ID == 0 {
-			return fmt.Errorf("Pay IDが正しく設定されていません")
-		}
-
-		log.Println("pay.ID", pay.ID)
-
-		// AccountPayレコードの作成
-		apr := br.GetAccountPayRepository()
-
-		for _, accountId := range accountIdsToPay {
-			accountPay := model.AccountPay{
-				AccountID: uint(accountId),
-				PayID:     pay.ID, // ここでpay.IDを使用
-			}
-
-			// アカウント支払いの作成
-			if err := apr.CreateAccountPay(&accountPay); err != nil {
-				// エラーが発生した場合、トランザクション内のすべての操作をロールバック
-				return fmt.Errorf("アカウント支払いの作成に失敗しました: %w", err)
-			}
+			return fmt.Errorf("pay idが正しく設定されていません")
 		}
 
 		return nil

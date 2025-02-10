@@ -2,9 +2,10 @@ package handler
 
 import (
 	"net/http"
+	"os"
+	"time"
 
-	"golang.org/x/crypto/bcrypt"
-
+	"github.com/dgrijalva/jwt-go"
 	"github.com/dqx0/GoHalves/go/model"
 	"github.com/dqx0/GoHalves/go/usecase"
 	"github.com/gin-gonic/gin"
@@ -59,14 +60,6 @@ func (ac *accountHandler) CreateAccount() gin.HandlerFunc {
 			return
 		}
 
-		// パスワードをハッシュ化
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-			return
-		}
-		account.Password = string(hashedPassword)
-
 		// アカウントを作成
 		createdAccount, err := au.CreateAccount(account)
 		if err != nil {
@@ -76,6 +69,26 @@ func (ac *accountHandler) CreateAccount() gin.HandlerFunc {
 
 		// パスワード情報を除外してレスポンスを返す
 		createdAccount.Password = ""
+
+		secretKey := os.Getenv("JWT_SECRET_KEY")
+		if secretKey == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Secret key not configured"})
+			return
+		}
+		expirationTime := time.Now().Add(time.Hour)
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"userId": account.UserID,
+			"exp":    expirationTime.Unix(),
+		})
+
+		tokenString, err := token.SignedString([]byte(secretKey))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+			return
+		}
+
+		c.Header("Set-Cookie", "jwtToken="+tokenString+"; Path='/'; Domain=localhost; Max-Age=3600;")
+
 		c.JSON(http.StatusOK, gin.H{"account": createdAccount})
 	}
 }

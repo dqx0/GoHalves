@@ -1,11 +1,8 @@
 package usecase
 
 import (
-	"fmt"
-
 	"github.com/dqx0/GoHalves/go/model"
 	"github.com/dqx0/GoHalves/go/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type ISessionUsecase interface {
@@ -27,12 +24,10 @@ func (su *sessionUsecase) Login(username string, password string) (bool, error) 
 	if err != nil {
 		return false, err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		fmt.Println(err.Error())
-		return false, err
-	}
 
+	if password == user.Password {
+		return true, nil
+	}
 	// パスワードが一致する場合、trueを返します。
-	return true, nil
+	return false, nil
 }

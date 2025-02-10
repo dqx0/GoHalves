@@ -5,16 +5,16 @@ import (
 )
 
 type Account struct {
-	ID        uint   `gorm:"primaryKey"`
-	UserID    string `gorm:"unique;not null"`
-	Name      string `gorm:"not null"`
-	Email     string `gorm:"default:null"`
-	Password  string `gorm:"not null"`
-	IsBot     bool   `gorm:"default:false"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Events    []Event `gorm:"many2many:accounts_events"`
-	Pays      []Pay   `gorm:"many2many:accounts_pays"`
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    string    `gorm:"unique;not null" json:"user_id"`
+	Name      string    `gorm:"not null" json:"name"`
+	Email     string    `gorm:"default:null" json:"email"`
+	Password  string    `gorm:"not null" json:"password"`
+	IsBot     bool      `gorm:"default:false" json:"is_bot"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Events    []Event   `gorm:"many2many:accounts_events" json:"events"`
+	Pays      []Pay     `gorm:"many2many:accounts_pays" json:"pays"`
 }
 
 type Event struct {
@@ -78,8 +78,8 @@ type AccountPay struct {
 	PayID     uint `gorm:"not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Account   Account `gorm:"foreignKey:AccountID"`
-	Pay       Pay     `gorm:"foreignKey:PayID"`
+	Account   Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:AccountID"`
+	Pay       Pay     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:PayID"`
 }
 
 func (ae *AccountEvent) TableName() string {

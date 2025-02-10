@@ -76,8 +76,9 @@ func (cu *calcUsecase) getIndexOfTheAccount(accountAmounts []model.AccountAmount
 func (cu *calcUsecase) initializeCalc(calcs model.Calc, event model.Event) model.Calc {
 	for _, account := range event.Accounts {
 		calcs.AccountAmounts = append(calcs.AccountAmounts, model.AccountAmount{
-			AccountId: int(account.ID),
-			Amount:    make(map[int]int),
+			AccountId:   int(account.ID),
+			AccountName: account.Name,
+			Amount:      make(map[int]int),
 		})
 		for _, otherAccount := range event.Accounts {
 			if otherAccount.ID != account.ID {
@@ -114,15 +115,22 @@ func (cu *calcUsecase) calc(calcs model.Calc, event model.Event) (model.Calc, er
 	return calcs, nil
 }
 func (cu *calcUsecase) subtractGap(accountAmounts []model.AccountAmount) []model.AccountAmount {
-	for _, calc := range accountAmounts {
-		for accountId, amount := range calc.Amount {
-			i := cu.getIndexOfTheAccount(accountAmounts, accountId)
-			if intMin(amount, accountAmounts[i].Amount[int(calc.AccountId)]) == 0 {
+	// accountAmounts を走査
+	for i := range accountAmounts {
+		for otherID, amount := range accountAmounts[i].Amount {
+			// otherID側の accountAmounts のインデックスを取得
+			j := cu.getIndexOfTheAccount(accountAmounts, otherID)
+			if j < 0 {
 				continue
 			}
-			gap := intAbs(amount - accountAmounts[i].Amount[int(calc.AccountId)])
-			calc.Amount[accountId] -= gap
-			accountAmounts[i].Amount[int(calc.AccountId)] -= gap
+			// 相手側がこちらに送る金額を取得（相殺対象）
+			mutualAmount := accountAmounts[j].Amount[accountAmounts[i].AccountId]
+			// 両者で正の金額がある場合、相殺可能な金額を算出して減額する
+			if amount > 0 && mutualAmount > 0 {
+				minVal := intMin(amount, mutualAmount)
+				accountAmounts[i].Amount[otherID] -= minVal
+				accountAmounts[j].Amount[accountAmounts[i].AccountId] -= minVal
+			}
 		}
 	}
 	return accountAmounts

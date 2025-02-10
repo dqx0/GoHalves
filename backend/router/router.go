@@ -29,15 +29,16 @@ func NewRouter(bh handler.IBaseHandler) *gin.Engine {
 		if bh.GetSessionHandler().IsLoggedIn(c) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Already logged in"})
 			return
+		} else {
+			c.Next()
 		}
-		c.Next()
 	}, bh.GetAccountHandler().CreateAccount())
 
 	authorized := r.Group("/")
 	authorized.Use(bh.GetSessionHandler().CheckSession)
 	{
-		//test
-		authorized.GET("/", bh.GetAccountHandler().GetAccountById())
+		// //test
+		// authorized.GET("/", bh.GetAccountHandler().GetAccountById())
 		// Account
 		authorized.GET("/account", bh.GetAccountHandler().GetAccountById())
 		authorized.POST("/accounts", bh.GetAccountHandler().CreateAccount())

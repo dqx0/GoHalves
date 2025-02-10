@@ -32,7 +32,8 @@ func (sc *sessionHandler) Login() gin.HandlerFunc {
 		su := sc.bu.GetSessionUsecase()
 		ok, err := su.Login(username, password)
 		if !ok || err != nil {
-			c.Redirect(http.StatusFound, "/account")
+			//c.Redirect(http.StatusFound, "/")
+			c.JSON(http.StatusOK, gin.H{"message": err})
 			return
 		}
 

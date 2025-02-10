@@ -10,6 +10,7 @@ type Calc struct {
 	AccountAmounts []AccountAmount `json:"account_amounts" binding:"required"`
 }
 type AccountAmount struct {
-	AccountId int         `json:"account_id" binding:"required"`
-	Amount    map[int]int `json:"account_amount" binding:"required"`
+	AccountId   int         `json:"account_id" binding:"required"`
+	AccountName string      `json:"account_name" binding:"required"`
+	Amount      map[int]int `json:"account_amount" binding:"required"`
 }

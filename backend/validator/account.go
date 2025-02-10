@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/dqx0/GoHalves/go/model"
@@ -19,6 +20,7 @@ func NewAccountValidator() IAccountValidator {
 }
 
 func (acv *accountValidator) AccountValidate(account *model.Account) error {
+	fmt.Println(account.Password)
 	return validation.ValidateStruct(account,
 		validation.Field(&account.UserID, validation.Required.Error("user_id is required")),
 		validation.Field(&account.Name, validation.Required.Error("name is required")),
